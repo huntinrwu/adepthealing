@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AdminGuard from "@/components/AdminGuard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 
 type ContactSubmission = {
@@ -42,12 +43,27 @@ type IntakeSubmission = {
   created_at: string;
 };
 
-const statusColors: Record<string, string> = {
-  new: "bg-blue-100 text-blue-800",
-  contacted: "bg-yellow-100 text-yellow-800",
-  scheduled: "bg-green-100 text-green-800",
-  completed: "bg-muted text-muted-foreground",
-  archived: "bg-muted text-muted-foreground",
+const STATUSES = ["new", "pending", "in_review", "contacted", "in_progress", "scheduled", "completed", "archived"] as const;
+
+const statusConfig: Record<string, { label: string; color: string; dot: string }> = {
+  new: { label: "New", color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300", dot: "bg-blue-500" },
+  pending: { label: "Pending", color: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300", dot: "bg-amber-500" },
+  in_review: { label: "In Review", color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300", dot: "bg-purple-500" },
+  contacted: { label: "Contacted", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300", dot: "bg-yellow-500" },
+  in_progress: { label: "In Progress", color: "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300", dot: "bg-sky-500" },
+  scheduled: { label: "Scheduled", color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300", dot: "bg-green-500" },
+  completed: { label: "Completed", color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300", dot: "bg-emerald-500" },
+  archived: { label: "Archived", color: "bg-muted text-muted-foreground", dot: "bg-muted-foreground" },
+};
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const cfg = statusConfig[status] || statusConfig.new;
+  return (
+    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${cfg.color}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+      {cfg.label}
+    </span>
+  );
 };
 
 const AdminDashboard = () => {
@@ -56,6 +72,9 @@ const AdminDashboard = () => {
   const [selectedContact, setSelectedContact] = useState<ContactSubmission | null>(null);
   const [selectedIntake, setSelectedIntake] = useState<IntakeSubmission | null>(null);
   const [editNotes, setEditNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -67,9 +86,37 @@ const AdminDashboard = () => {
     if (intakeRes.data) setIntakes(intakeRes.data);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
+
+  const filteredContacts = useMemo(() => {
+    let list = contacts;
+    if (statusFilter !== "all") list = list.filter(c => c.status === statusFilter);
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        c.message.toLowerCase().includes(q) ||
+        (c.phone && c.phone.includes(q))
+      );
+    }
+    return list;
+  }, [contacts, statusFilter, search]);
+
+  const filteredIntakes = useMemo(() => {
+    let list = intakes;
+    if (statusFilter !== "all") list = list.filter(i => i.status === statusFilter);
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(i =>
+        `${i.first_name} ${i.last_name}`.toLowerCase().includes(q) ||
+        i.email.toLowerCase().includes(q) ||
+        i.primary_concern.toLowerCase().includes(q) ||
+        i.phone.includes(q)
+      );
+    }
+    return list;
+  }, [intakes, statusFilter, search]);
 
   const updateContactStatus = async (id: string, status: string) => {
     await supabase.from("contact_submissions").update({ status }).eq("id", id);
@@ -83,14 +130,12 @@ const AdminDashboard = () => {
     if (selectedIntake?.id === id) setSelectedIntake({ ...selectedIntake, status });
   };
 
-  const saveContactNotes = async (id: string) => {
-    await supabase.from("contact_submissions").update({ notes: editNotes }).eq("id", id);
-    fetchData();
-  };
-
-  const saveIntakeNotes = async (id: string) => {
-    await supabase.from("intake_submissions").update({ notes: editNotes }).eq("id", id);
-    fetchData();
+  const saveNotes = async (type: "contact" | "intake", id: string) => {
+    setSaving(true);
+    const table = type === "contact" ? "contact_submissions" : "intake_submissions";
+    await supabase.from(table).update({ notes: editNotes }).eq("id", id);
+    await fetchData();
+    setSaving(false);
   };
 
   const handleLogout = async () => {
@@ -98,8 +143,19 @@ const AdminDashboard = () => {
     navigate("/admin/login");
   };
 
-  const newContactCount = contacts.filter((c) => c.status === "new").length;
-  const newIntakeCount = intakes.filter((i) => i.status === "new").length;
+  // Stats
+  const countByStatus = (items: { status: string }[]) => {
+    const counts: Record<string, number> = {};
+    STATUSES.forEach(s => counts[s] = 0);
+    items.forEach(i => { counts[i.status] = (counts[i.status] || 0) + 1; });
+    return counts;
+  };
+
+  const contactCounts = countByStatus(contacts);
+  const intakeCounts = countByStatus(intakes);
+  const actionNeeded = contactCounts.new + contactCounts.pending + intakeCounts.new + intakeCounts.pending;
+  const inProgress = contactCounts.in_review + contactCounts.contacted + contactCounts.in_progress +
+                     intakeCounts.in_review + intakeCounts.contacted + intakeCounts.in_progress;
 
   return (
     <AdminGuard>
@@ -108,106 +164,120 @@ const AdminDashboard = () => {
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      <div className="min-h-screen bg-sage-light">
+      <div className="min-h-screen bg-muted/30">
         {/* Header */}
-        <header className="bg-background border-b border-border px-6 py-5">
+        <header className="bg-background border-b border-border px-4 sm:px-6 py-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-primary font-display font-semibold text-lg">A</span>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-primary font-semibold text-base">A</span>
               </div>
               <div>
-                <h1 className="font-display text-2xl font-semibold text-foreground">
-                  Welcome Back 👋
-                </h1>
-                <p className="text-sm text-muted-foreground">Here's what's happening with your practice</p>
+                <h1 className="text-xl font-semibold text-foreground">Practice Manager</h1>
+                <p className="text-xs text-muted-foreground">Adept Healing Admin</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <a
-                href="/"
-                className="text-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5"
-              >
-                ← Back to Website
-              </a>
-              <span className="text-border">|</span>
-              <button
-                onClick={handleLogout}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
+            <div className="flex items-center gap-3 text-sm">
+              <a href="/" className="text-primary hover:text-primary/80 transition-colors">← Site</a>
+              <button onClick={handleLogout} className="text-muted-foreground hover:text-foreground transition-colors">
                 Sign Out
               </button>
             </div>
           </div>
         </header>
 
-        {/* Dashboard */}
-        <main className="max-w-7xl mx-auto px-6 py-8">
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-background rounded-xl p-6 shadow-sm">
-              <p className="text-sm text-muted-foreground">Contact Inquiries</p>
-              <p className="text-3xl font-display font-semibold text-foreground">{contacts.length}</p>
-            </div>
-            <div className="bg-background rounded-xl p-6 shadow-sm">
-              <p className="text-sm text-muted-foreground">New Inquiries</p>
-              <p className="text-3xl font-display font-semibold text-primary">{newContactCount}</p>
-            </div>
-            <div className="bg-background rounded-xl p-6 shadow-sm">
-              <p className="text-sm text-muted-foreground">Intake Forms</p>
-              <p className="text-3xl font-display font-semibold text-foreground">{intakes.length}</p>
-            </div>
-            <div className="bg-background rounded-xl p-6 shadow-sm">
-              <p className="text-sm text-muted-foreground">New Intakes</p>
-              <p className="text-3xl font-display font-semibold text-primary">{newIntakeCount}</p>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+            {[
+              { label: "Total", value: contacts.length + intakes.length, accent: false },
+              { label: "Action Needed", value: actionNeeded, accent: actionNeeded > 0 },
+              { label: "In Progress", value: inProgress, accent: false },
+              { label: "Scheduled", value: contactCounts.scheduled + intakeCounts.scheduled, accent: false },
+              { label: "Completed", value: contactCounts.completed + intakeCounts.completed, accent: false },
+            ].map((stat) => (
+              <div key={stat.label} className="bg-background rounded-lg p-4 shadow-sm">
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className={`text-2xl font-semibold ${stat.accent ? "text-primary" : "text-foreground"}`}>{stat.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            <Input
+              placeholder="Search by name, email, phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="sm:max-w-xs"
+            />
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                onClick={() => setStatusFilter("all")}
+                className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+                  statusFilter === "all" ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                All
+              </button>
+              {STATUSES.map(s => {
+                const cfg = statusConfig[s];
+                return (
+                  <button
+                    key={s}
+                    onClick={() => setStatusFilter(s)}
+                    className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+                      statusFilter === s ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {cfg.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <Tabs defaultValue="contacts" className="space-y-6">
+          <Tabs defaultValue="contacts" className="space-y-4">
             <TabsList className="bg-background">
               <TabsTrigger value="contacts" className="gap-2">
-                Contact Inquiries
-                {newContactCount > 0 && (
-                  <Badge variant="destructive" className="text-xs px-1.5 py-0">{newContactCount}</Badge>
-                )}
+                Inquiries
+                {contactCounts.new > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0">{contactCounts.new}</Badge>}
               </TabsTrigger>
               <TabsTrigger value="intakes" className="gap-2">
-                Patient Intakes
-                {newIntakeCount > 0 && (
-                  <Badge variant="destructive" className="text-xs px-1.5 py-0">{newIntakeCount}</Badge>
-                )}
+                Patients
+                {intakeCounts.new > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0">{intakeCounts.new}</Badge>}
               </TabsTrigger>
             </TabsList>
 
-            {/* Contacts Tab */}
+            {/* CONTACTS TAB */}
             <TabsContent value="contacts">
-              <div className="grid lg:grid-cols-3 gap-6">
-                {/* List */}
-                <div className="lg:col-span-2 space-y-3">
-                  {contacts.length === 0 ? (
-                    <div className="bg-background rounded-xl p-8 text-center text-muted-foreground">
-                      No contact inquiries yet.
+              <div className="grid lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2 space-y-2">
+                  {filteredContacts.length === 0 ? (
+                    <div className="bg-background rounded-lg p-8 text-center text-muted-foreground text-sm">
+                      {search || statusFilter !== "all" ? "No results match your filters." : "No contact inquiries yet."}
                     </div>
                   ) : (
-                    contacts.map((c) => (
+                    filteredContacts.map(c => (
                       <div
                         key={c.id}
                         onClick={() => { setSelectedContact(c); setSelectedIntake(null); setEditNotes(c.notes || ""); }}
-                        className={`bg-background rounded-xl p-4 shadow-sm cursor-pointer transition-all hover:shadow-md ${
-                          selectedContact?.id === c.id ? "ring-2 ring-primary" : ""
+                        className={`bg-background rounded-lg p-4 shadow-sm cursor-pointer transition-all hover:shadow-md border-l-4 ${
+                          selectedContact?.id === c.id ? "ring-2 ring-primary border-l-primary" : "border-l-transparent"
                         }`}
                       >
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <p className="font-display font-medium text-foreground">{c.name}</p>
-                            <p className="text-sm text-muted-foreground">{c.email}</p>
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground truncate">{c.name}</p>
+                            <p className="text-xs text-muted-foreground">{c.email}{c.phone ? ` · ${c.phone}` : ""}</p>
                           </div>
-                          <Badge className={statusColors[c.status] || ""}>{c.status}</Badge>
+                          <StatusBadge status={c.status} />
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{c.message}</p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {format(new Date(c.created_at), "MMM d, yyyy h:mm a")}
-                        </p>
+                        <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{c.message}</p>
+                        <div className="flex items-center justify-between mt-2">
+                          <p className="text-xs text-muted-foreground">{format(new Date(c.created_at), "MMM d, yyyy h:mm a")}</p>
+                          {c.notes && <span className="text-xs text-muted-foreground">📝 Has notes</span>}
+                        </div>
                       </div>
                     ))
                   )}
@@ -216,56 +286,62 @@ const AdminDashboard = () => {
                 {/* Detail Panel */}
                 <div>
                   {selectedContact ? (
-                    <div className="bg-background rounded-xl p-6 shadow-sm sticky top-4 space-y-4">
-                      <h3 className="font-display text-lg font-semibold text-foreground">
-                        {selectedContact.name}
-                      </h3>
-                      <div className="space-y-2 text-sm">
-                        <p><span className="text-muted-foreground">Email:</span> {selectedContact.email}</p>
-                        {selectedContact.phone && <p><span className="text-muted-foreground">Phone:</span> {selectedContact.phone}</p>}
-                        <p><span className="text-muted-foreground">Interest:</span> {selectedContact.interest}</p>
-                        <p><span className="text-muted-foreground">Date:</span> {format(new Date(selectedContact.created_at), "MMM d, yyyy h:mm a")}</p>
+                    <div className="bg-background rounded-lg p-5 shadow-sm sticky top-4 space-y-4 max-h-[85vh] overflow-y-auto">
+                      <div className="flex items-start justify-between">
+                        <h3 className="text-lg font-semibold text-foreground">{selectedContact.name}</h3>
+                        <button onClick={() => setSelectedContact(null)} className="text-muted-foreground hover:text-foreground text-sm">✕</button>
                       </div>
+
+                      <div className="space-y-1.5 text-sm">
+                        <p><span className="text-muted-foreground">Email:</span> <a href={`mailto:${selectedContact.email}`} className="text-primary hover:underline">{selectedContact.email}</a></p>
+                        {selectedContact.phone && <p><span className="text-muted-foreground">Phone:</span> <a href={`tel:${selectedContact.phone}`} className="text-primary hover:underline">{selectedContact.phone}</a></p>}
+                        <p><span className="text-muted-foreground">Interest:</span> {selectedContact.interest}</p>
+                        <p><span className="text-muted-foreground">Submitted:</span> {format(new Date(selectedContact.created_at), "MMM d, yyyy h:mm a")}</p>
+                      </div>
+
                       <div>
                         <p className="text-sm font-medium text-foreground mb-1">Message</p>
-                        <p className="text-sm text-muted-foreground bg-sage-light rounded-lg p-3">{selectedContact.message}</p>
+                        <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">{selectedContact.message}</p>
                       </div>
+
                       <div>
-                        <p className="text-sm font-medium text-foreground mb-2">Status</p>
-                        <div className="flex flex-wrap gap-2">
-                          {["new", "contacted", "scheduled", "completed", "archived"].map((s) => (
+                        <p className="text-sm font-medium text-foreground mb-2">Status Pipeline</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {STATUSES.map(s => (
                             <button
                               key={s}
                               onClick={() => updateContactStatus(selectedContact.id, s)}
-                              className={`text-xs px-3 py-1 rounded-full capitalize transition-colors ${
+                              className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
                                 selectedContact.status === s
                                   ? "bg-primary text-primary-foreground"
                                   : "bg-muted text-muted-foreground hover:bg-muted/80"
                               }`}
                             >
-                              {s}
+                              {statusConfig[s]?.label || s}
                             </button>
                           ))}
                         </div>
                       </div>
+
                       <div>
-                        <p className="text-sm font-medium text-foreground mb-1">Notes</p>
+                        <p className="text-sm font-medium text-foreground mb-1">Internal Notes</p>
                         <textarea
                           value={editNotes}
                           onChange={(e) => setEditNotes(e.target.value)}
-                          className="w-full h-24 text-sm border border-input rounded-lg p-2 bg-background"
-                          placeholder="Add internal notes..."
+                          className="w-full h-28 text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                          placeholder="Add notes about this inquiry..."
                         />
                         <button
-                          onClick={() => saveContactNotes(selectedContact.id)}
-                          className="mt-2 text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90"
+                          onClick={() => saveNotes("contact", selectedContact.id)}
+                          disabled={saving}
+                          className="mt-2 text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
                         >
-                          Save Notes
+                          {saving ? "Saving..." : "Save Notes"}
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-background rounded-xl p-6 text-center text-muted-foreground text-sm">
+                    <div className="bg-background rounded-lg p-6 text-center text-muted-foreground text-sm">
                       Select an inquiry to view details
                     </div>
                   )}
@@ -273,37 +349,35 @@ const AdminDashboard = () => {
               </div>
             </TabsContent>
 
-            {/* Intakes Tab */}
+            {/* INTAKES TAB */}
             <TabsContent value="intakes">
-              <div className="grid lg:grid-cols-3 gap-6">
-                {/* List */}
-                <div className="lg:col-span-2 space-y-3">
-                  {intakes.length === 0 ? (
-                    <div className="bg-background rounded-xl p-8 text-center text-muted-foreground">
-                      No intake forms submitted yet.
+              <div className="grid lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2 space-y-2">
+                  {filteredIntakes.length === 0 ? (
+                    <div className="bg-background rounded-lg p-8 text-center text-muted-foreground text-sm">
+                      {search || statusFilter !== "all" ? "No results match your filters." : "No intake forms yet."}
                     </div>
                   ) : (
-                    intakes.map((i) => (
+                    filteredIntakes.map(i => (
                       <div
                         key={i.id}
                         onClick={() => { setSelectedIntake(i); setSelectedContact(null); setEditNotes(i.notes || ""); }}
-                        className={`bg-background rounded-xl p-4 shadow-sm cursor-pointer transition-all hover:shadow-md ${
-                          selectedIntake?.id === i.id ? "ring-2 ring-primary" : ""
+                        className={`bg-background rounded-lg p-4 shadow-sm cursor-pointer transition-all hover:shadow-md border-l-4 ${
+                          selectedIntake?.id === i.id ? "ring-2 ring-primary border-l-primary" : "border-l-transparent"
                         }`}
                       >
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <p className="font-display font-medium text-foreground">
-                              {i.first_name} {i.last_name}
-                            </p>
-                            <p className="text-sm text-muted-foreground">{i.email}</p>
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground truncate">{i.first_name} {i.last_name}</p>
+                            <p className="text-xs text-muted-foreground">{i.email} · {i.phone}</p>
                           </div>
-                          <Badge className={statusColors[i.status] || ""}>{i.status}</Badge>
+                          <StatusBadge status={i.status} />
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{i.primary_concern}</p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {format(new Date(i.created_at), "MMM d, yyyy h:mm a")}
-                        </p>
+                        <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{i.primary_concern}</p>
+                        <div className="flex items-center justify-between mt-2">
+                          <p className="text-xs text-muted-foreground">{format(new Date(i.created_at), "MMM d, yyyy h:mm a")}</p>
+                          {i.notes && <span className="text-xs text-muted-foreground">📝 Has notes</span>}
+                        </div>
                       </div>
                     ))
                   )}
@@ -312,94 +386,111 @@ const AdminDashboard = () => {
                 {/* Detail Panel */}
                 <div>
                   {selectedIntake ? (
-                    <div className="bg-background rounded-xl p-6 shadow-sm sticky top-4 space-y-4 max-h-[80vh] overflow-y-auto">
-                      <h3 className="font-display text-lg font-semibold text-foreground">
-                        {selectedIntake.first_name} {selectedIntake.last_name}
-                      </h3>
-                      <div className="space-y-2 text-sm">
-                        <p><span className="text-muted-foreground">Email:</span> {selectedIntake.email}</p>
-                        <p><span className="text-muted-foreground">Phone:</span> {selectedIntake.phone}</p>
-                        <p><span className="text-muted-foreground">DOB:</span> {selectedIntake.date_of_birth}</p>
-                        <p><span className="text-muted-foreground">Gender:</span> {selectedIntake.gender}</p>
-                        <p><span className="text-muted-foreground">Address:</span> {selectedIntake.address}</p>
+                    <div className="bg-background rounded-lg p-5 shadow-sm sticky top-4 space-y-4 max-h-[85vh] overflow-y-auto">
+                      <div className="flex items-start justify-between">
+                        <h3 className="text-lg font-semibold text-foreground">{selectedIntake.first_name} {selectedIntake.last_name}</h3>
+                        <button onClick={() => setSelectedIntake(null)} className="text-muted-foreground hover:text-foreground text-sm">✕</button>
                       </div>
-                      <div>
+
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                        <p><span className="text-muted-foreground">Email:</span></p>
+                        <a href={`mailto:${selectedIntake.email}`} className="text-primary hover:underline truncate">{selectedIntake.email}</a>
+                        <p><span className="text-muted-foreground">Phone:</span></p>
+                        <a href={`tel:${selectedIntake.phone}`} className="text-primary hover:underline">{selectedIntake.phone}</a>
+                        <p><span className="text-muted-foreground">DOB:</span></p>
+                        <p>{selectedIntake.date_of_birth}</p>
+                        <p><span className="text-muted-foreground">Gender:</span></p>
+                        <p className="capitalize">{selectedIntake.gender}</p>
+                        <p><span className="text-muted-foreground">Address:</span></p>
+                        <p>{selectedIntake.address}</p>
+                      </div>
+
+                      <div className="border-t border-border pt-3">
                         <p className="text-sm font-medium text-foreground mb-1">Emergency Contact</p>
-                        <p className="text-sm text-muted-foreground">{selectedIntake.emergency_contact} — {selectedIntake.emergency_phone}</p>
+                        <p className="text-sm text-muted-foreground">{selectedIntake.emergency_contact} — <a href={`tel:${selectedIntake.emergency_phone}`} className="text-primary hover:underline">{selectedIntake.emergency_phone}</a></p>
                       </div>
-                      <div>
+
+                      <div className="border-t border-border pt-3">
                         <p className="text-sm font-medium text-foreground mb-1">Primary Concern</p>
-                        <p className="text-sm text-muted-foreground bg-sage-light rounded-lg p-3">{selectedIntake.primary_concern}</p>
+                        <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">{selectedIntake.primary_concern}</p>
                       </div>
+
                       {selectedIntake.conditions && selectedIntake.conditions.length > 0 && (
                         <div>
-                          <p className="text-sm font-medium text-foreground mb-2">Conditions</p>
+                          <p className="text-sm font-medium text-foreground mb-1.5">Conditions</p>
                           <div className="flex flex-wrap gap-1.5">
-                            {selectedIntake.conditions.map((c) => (
+                            {selectedIntake.conditions.map(c => (
                               <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>
                             ))}
                           </div>
                         </div>
                       )}
+
                       {selectedIntake.medical_history && (
                         <div>
                           <p className="text-sm font-medium text-foreground mb-1">Medical History</p>
                           <p className="text-sm text-muted-foreground">{selectedIntake.medical_history}</p>
                         </div>
                       )}
+
                       {selectedIntake.current_medications && (
                         <div>
                           <p className="text-sm font-medium text-foreground mb-1">Medications</p>
                           <p className="text-sm text-muted-foreground">{selectedIntake.current_medications}</p>
                         </div>
                       )}
+
                       {selectedIntake.allergies && (
                         <div>
                           <p className="text-sm font-medium text-foreground mb-1">Allergies</p>
                           <p className="text-sm text-muted-foreground">{selectedIntake.allergies}</p>
                         </div>
                       )}
+
                       <p className="text-sm"><span className="text-muted-foreground">Previous Acupuncture:</span> {selectedIntake.previous_acupuncture}</p>
                       {selectedIntake.referral_source && (
                         <p className="text-sm"><span className="text-muted-foreground">Referral:</span> {selectedIntake.referral_source}</p>
                       )}
-                      <div>
-                        <p className="text-sm font-medium text-foreground mb-2">Status</p>
-                        <div className="flex flex-wrap gap-2">
-                          {["new", "contacted", "scheduled", "completed", "archived"].map((s) => (
+
+                      <div className="border-t border-border pt-3">
+                        <p className="text-sm font-medium text-foreground mb-2">Status Pipeline</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {STATUSES.map(s => (
                             <button
                               key={s}
                               onClick={() => updateIntakeStatus(selectedIntake.id, s)}
-                              className={`text-xs px-3 py-1 rounded-full capitalize transition-colors ${
+                              className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
                                 selectedIntake.status === s
                                   ? "bg-primary text-primary-foreground"
                                   : "bg-muted text-muted-foreground hover:bg-muted/80"
                               }`}
                             >
-                              {s}
+                              {statusConfig[s]?.label || s}
                             </button>
                           ))}
                         </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground mb-1">Notes</p>
+
+                      <div className="border-t border-border pt-3">
+                        <p className="text-sm font-medium text-foreground mb-1">Internal Notes</p>
                         <textarea
                           value={editNotes}
                           onChange={(e) => setEditNotes(e.target.value)}
-                          className="w-full h-24 text-sm border border-input rounded-lg p-2 bg-background"
-                          placeholder="Add internal notes..."
+                          className="w-full h-28 text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                          placeholder="Add notes about this patient..."
                         />
                         <button
-                          onClick={() => saveIntakeNotes(selectedIntake.id)}
-                          className="mt-2 text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90"
+                          onClick={() => saveNotes("intake", selectedIntake.id)}
+                          disabled={saving}
+                          className="mt-2 text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
                         >
-                          Save Notes
+                          {saving ? "Saving..." : "Save Notes"}
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-background rounded-xl p-6 text-center text-muted-foreground text-sm">
-                      Select an intake form to view details
+                    <div className="bg-background rounded-lg p-6 text-center text-muted-foreground text-sm">
+                      Select a patient to view details
                     </div>
                   )}
                 </div>
