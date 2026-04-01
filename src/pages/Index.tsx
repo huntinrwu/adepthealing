@@ -34,7 +34,7 @@ const jsonLd = {
   availableService: [
     { "@type": "MedicalTherapy", name: "Acupuncture for Pain Relief" },
     { "@type": "MedicalTherapy", name: "Acupuncture for Stress & Anxiety" },
-    { "@type": "MedicalTherapy", name: "Fertility Acupuncture" },
+    { "@type": "MedicalTherapy", name: "Digestive & General Wellness Acupuncture" },
     { "@type": "MedicalTherapy", name: "Sports Injury Acupuncture" },
   ],
   priceRange: "$$",

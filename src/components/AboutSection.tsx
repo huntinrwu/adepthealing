@@ -49,7 +49,7 @@ const AboutSection = () => {
             </p>
             <p className="body-md text-muted-foreground mb-8">
               Whether you're seeking relief from chronic pain, managing stress and anxiety, 
-              addressing digestive issues, or enhancing fertility, our personalized treatment 
+              addressing digestive issues, or improving sleep quality, our personalized treatment 
               plans are designed to restore your body's natural equilibrium and support 
               long-term vitality.
             </p>
