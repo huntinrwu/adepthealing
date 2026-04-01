@@ -52,11 +52,6 @@ const faqs = [
       "Eat a light meal 1–2 hours before your appointment — don't come on an empty stomach. Wear loose, comfortable clothing that can be rolled up above your elbows and knees. Avoid caffeine and alcohol before your session. Stay hydrated. After treatment, rest and drink plenty of water to support your body's healing response.",
   },
   {
-    question: "Can acupuncture help with fertility and IVF?",
-    answer:
-      "Yes, acupuncture is widely used to support fertility and IVF outcomes. Research suggests it can improve blood flow to the uterus, regulate hormones, reduce stress, improve egg quality, and increase implantation rates. Many reproductive endocrinologists recommend acupuncture as a complementary therapy alongside fertility treatments.",
-  },
-  {
     question: "Where is your acupuncture clinic located?",
     answer:
       "Adept Healing is located at 1033 Sterling Road, Suite 105, Herndon, VA. We serve patients throughout Northern Virginia including Reston, Sterling, Ashburn, Leesburg, Chantilly, Centreville, Fairfax, and the greater Washington DC metropolitan area. We're open on Saturdays by appointment.",
