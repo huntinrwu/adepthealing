@@ -45,6 +45,18 @@ const Footer = () => {
                 FAQ
               </Link>
               <Link
+                to="/areas-we-serve"
+                className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+              >
+                Areas We Serve
+              </Link>
+              <Link
+                to="/acupuncture-fairfax-county-va"
+                className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+              >
+                Fairfax County Acupuncture
+              </Link>
+              <Link
                 to="/intake"
                 className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
               >

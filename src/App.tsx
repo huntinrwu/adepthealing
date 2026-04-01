@@ -28,6 +28,8 @@ const App = () => (
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/intake" element={<IntakeForm />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/acupuncture-fairfax-county-va" element={<FairfaxCountyAcupuncture />} />
+            <Route path="/areas-we-serve" element={<AreasWeServe />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
