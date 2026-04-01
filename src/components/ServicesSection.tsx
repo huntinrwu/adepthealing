@@ -18,11 +18,11 @@ const services = [
     alt: "Acupuncture for stress relief anxiety management and improved sleep quality",
   },
   {
-    title: "Fertility & Women's Health",
+    title: "Digestive & General Wellness",
     description:
-      "Evidence-informed acupuncture supporting fertility, IVF, hormonal balance, menstrual health, and menopausal symptoms. Gentle, personalized treatments to nurture reproductive wellness naturally.",
+      "Holistic acupuncture treatments supporting digestive health, immune function, allergy relief, and overall vitality. Restore your body's natural balance and promote long-term well-being.",
     image: acupunctureImg,
-    alt: "Acupuncture for fertility support IVF and women's health in Northern Virginia",
+    alt: "Acupuncture for digestive health general wellness and immune support in Northern Virginia",
   },
   {
     title: "Sports Injury & Recovery",
