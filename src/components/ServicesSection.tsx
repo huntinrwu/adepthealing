@@ -1,37 +1,35 @@
 import { motion } from "framer-motion";
 import acupunctureImg from "@/assets/acupuncture-treatment.jpg";
-import herbalImg from "@/assets/herbal-medicine.jpg";
-import cuppingImg from "@/assets/cupping-therapy.jpg";
 import meditationImg from "@/assets/wellness-meditation.jpg";
 
 const services = [
   {
-    title: "Acupuncture",
+    title: "Acupuncture for Pain Relief",
     description:
-      "Precision needle therapy targeting meridian points to restore energy flow, relieve chronic pain, reduce stress, and promote deep healing throughout the body.",
+      "Precision needle therapy targeting meridian points to relieve chronic pain, back pain, neck pain, migraines, sciatica, and joint discomfort. Restore energy flow and promote deep, lasting healing throughout the body.",
     image: acupunctureImg,
-    alt: "Professional acupuncture treatment with fine needles for pain relief and healing",
+    alt: "Professional acupuncture treatment with fine needles for chronic pain relief and healing in Herndon VA",
   },
   {
-    title: "Herbal Medicine",
+    title: "Stress & Anxiety Acupuncture",
     description:
-      "Custom-blended traditional Chinese herbal formulas tailored to your unique constitution, supporting immune health, digestion, hormonal balance, and vitality.",
-    image: herbalImg,
-    alt: "Traditional Chinese herbal medicine preparation with natural healing herbs",
-  },
-  {
-    title: "Cupping Therapy",
-    description:
-      "Therapeutic suction cups applied to relieve muscle tension, improve circulation, reduce inflammation, and accelerate recovery from injury and chronic conditions.",
-    image: cuppingImg,
-    alt: "Cupping therapy session for muscle relief and improved blood circulation",
-  },
-  {
-    title: "Wellness & Mindfulness",
-    description:
-      "Guided holistic wellness practices including breathwork, meditation techniques, and lifestyle counseling to cultivate lasting mind-body harmony and emotional resilience.",
+      "Specialized acupuncture protocols designed to calm the nervous system, reduce anxiety, improve sleep quality, and restore emotional balance. Experience profound relaxation and mental clarity.",
     image: meditationImg,
-    alt: "Mindfulness meditation practice for holistic wellness and inner peace",
+    alt: "Acupuncture for stress relief anxiety management and improved sleep quality",
+  },
+  {
+    title: "Fertility & Women's Health",
+    description:
+      "Evidence-informed acupuncture supporting fertility, IVF, hormonal balance, menstrual health, and menopausal symptoms. Gentle, personalized treatments to nurture reproductive wellness naturally.",
+    image: acupunctureImg,
+    alt: "Acupuncture for fertility support IVF and women's health in Northern Virginia",
+  },
+  {
+    title: "Sports Injury & Recovery",
+    description:
+      "Accelerate healing from sports injuries, muscle strains, tendonitis, and post-surgical recovery. Acupuncture reduces inflammation, improves circulation, and restores mobility faster.",
+    image: meditationImg,
+    alt: "Sports acupuncture for injury recovery muscle strain and athletic performance",
   },
 ];
 
@@ -50,11 +48,11 @@ const ServicesSection = () => {
             What We Offer
           </p>
           <h2 className="heading-lg text-foreground mb-4">
-            Holistic Healing Services
+            Acupuncture Services
           </h2>
           <p className="body-md text-muted-foreground max-w-2xl mx-auto">
-            From acupuncture and herbal medicine to cupping therapy and wellness coaching, 
-            our comprehensive treatments address the root cause of imbalance — not just the symptoms.
+            From chronic pain and stress relief to fertility support and sports recovery, 
+            our acupuncture treatments address the root cause of imbalance — not just the symptoms.
           </p>
         </motion.div>
 
