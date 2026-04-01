@@ -24,7 +24,7 @@ const faqs = [
   {
     question: "What conditions can acupuncture treat?",
     answer:
-      "Acupuncture is effective for a wide range of conditions including chronic pain (back pain, neck pain, knee pain), migraines and headaches, stress and anxiety, insomnia, digestive disorders (IBS, acid reflux), allergies, fertility challenges, menstrual irregularities, menopausal symptoms, sports injuries, sciatica, carpal tunnel syndrome, TMJ, and post-surgical recovery. It's also excellent for general wellness and preventive care.",
+      "Acupuncture is effective for a wide range of conditions including chronic pain (back pain, neck pain, knee pain), migraines and headaches, stress and anxiety, insomnia, digestive disorders (IBS, acid reflux), allergies, sports injuries, sciatica, carpal tunnel syndrome, TMJ, and post-surgical recovery. It's also excellent for general wellness and preventive care.",
   },
   {
     question: "How many acupuncture sessions will I need?",
@@ -50,11 +50,6 @@ const faqs = [
     question: "How should I prepare for an acupuncture session?",
     answer:
       "Eat a light meal 1–2 hours before your appointment — don't come on an empty stomach. Wear loose, comfortable clothing that can be rolled up above your elbows and knees. Avoid caffeine and alcohol before your session. Stay hydrated. After treatment, rest and drink plenty of water to support your body's healing response.",
-  },
-  {
-    question: "Can acupuncture help with fertility and IVF?",
-    answer:
-      "Yes, acupuncture is widely used to support fertility and IVF outcomes. Research suggests it can improve blood flow to the uterus, regulate hormones, reduce stress, improve egg quality, and increase implantation rates. Many reproductive endocrinologists recommend acupuncture as a complementary therapy alongside fertility treatments.",
   },
   {
     question: "Where is your acupuncture clinic located?",
@@ -93,11 +88,11 @@ const FAQ = () => {
         <title>Acupuncture FAQ | Common Questions | Adept Healing Herndon VA</title>
         <meta
           name="description"
-          content="Frequently asked questions about acupuncture at Adept Healing in Herndon, VA. Learn about acupuncture benefits, what to expect, pain relief, fertility support, insurance coverage, and more."
+          content="Frequently asked questions about acupuncture at Adept Healing in Herndon, VA. Learn about acupuncture benefits, what to expect, pain relief, insurance coverage, and more."
         />
         <meta
           name="keywords"
-          content="acupuncture FAQ, acupuncture questions, does acupuncture hurt, acupuncture benefits, acupuncture for pain, acupuncture for anxiety, acupuncture Herndon VA, acupuncture Northern Virginia, fertility acupuncture, acupuncture insurance, first acupuncture visit, acupuncture safety"
+          content="acupuncture FAQ, acupuncture questions, does acupuncture hurt, acupuncture benefits, acupuncture for pain, acupuncture for anxiety, acupuncture Herndon VA, acupuncture Northern Virginia, acupuncture insurance, first acupuncture visit, acupuncture safety"
         />
         <meta property="og:title" content="Acupuncture FAQ | Adept Healing | Herndon VA" />
         <meta

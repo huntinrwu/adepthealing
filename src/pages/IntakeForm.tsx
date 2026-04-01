@@ -37,7 +37,7 @@ type IntakeFormData = z.infer<typeof intakeSchema>;
 const conditions = [
   "Chronic Pain", "Headaches / Migraines", "Back Pain", "Neck & Shoulder Pain",
   "Anxiety / Stress", "Depression", "Insomnia", "Digestive Issues",
-  "Allergies / Sinusitis", "Fertility", "Women's Health", "Sports Injuries",
+  "Allergies / Sinusitis", "Sports Injuries",
   "Arthritis", "Fatigue / Low Energy", "High Blood Pressure", "Other",
 ];
 

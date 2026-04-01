@@ -145,7 +145,7 @@ const ContactPage = () => {
                     <option value="">Select a service...</option>
                     <option value="pain-relief">Acupuncture for Pain Relief</option>
                     <option value="stress-anxiety">Stress & Anxiety Relief</option>
-                    <option value="fertility">Fertility Support</option>
+                    <option value="wellness">General Wellness</option>
                     <option value="sports">Sports Injury Recovery</option>
                     <option value="general">General Wellness</option>
                     <option value="other">Other / Not Sure</option>

@@ -12,7 +12,7 @@ const jsonLd = {
   "@type": "MedicalBusiness",
   name: "Adept Healing",
   description:
-    "Expert acupuncture and holistic wellness services in Herndon, Virginia. Pain relief, stress management, fertility support, sports recovery, and whole-person care.",
+    "Expert acupuncture and holistic wellness services in Herndon, Virginia. Pain relief, stress management, digestive health, sports recovery, and whole-person care.",
   url: "https://adepthealing.com",
   telephone: "",
   address: {
@@ -34,7 +34,7 @@ const jsonLd = {
   availableService: [
     { "@type": "MedicalTherapy", name: "Acupuncture for Pain Relief" },
     { "@type": "MedicalTherapy", name: "Acupuncture for Stress & Anxiety" },
-    { "@type": "MedicalTherapy", name: "Fertility Acupuncture" },
+    { "@type": "MedicalTherapy", name: "Digestive & General Wellness Acupuncture" },
     { "@type": "MedicalTherapy", name: "Sports Injury Acupuncture" },
   ],
   priceRange: "$$",

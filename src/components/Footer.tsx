@@ -60,7 +60,7 @@ const Footer = () => {
               <li>Chronic Pain & Back Pain</li>
               <li>Migraines & Headaches</li>
               <li>Stress & Anxiety Relief</li>
-              <li>Fertility & Women's Health</li>
+              <li>Digestive & General Wellness</li>
               <li>Sports Injury Recovery</li>
               <li>Insomnia & Sleep Issues</li>
             </ul>
