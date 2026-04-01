@@ -65,7 +65,7 @@ const TestimonialsSection = () => {
                 <p className="font-display text-lg font-semibold text-foreground">{t.name}</p>
                 <p className="text-sm text-primary">{t.condition}</p>
               </footer>
-            </blockquote>
+            </motion.blockquote>
           ))}
         </div>
       </div>
