@@ -15,7 +15,7 @@ const values = [
   {
     icon: Shield,
     title: "Evidence-Informed",
-    description: "Our practice integrates ancient wisdom with modern understanding of anatomy and physiology.",
+    description: "Ancient wisdom integrated with modern anatomy and physiology.",
   },
   {
     icon: Sparkles,
