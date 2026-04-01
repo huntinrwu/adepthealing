@@ -6,6 +6,7 @@ import { z } from "zod";
 import { motion } from "framer-motion";
 import { CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Input } from "@/components/ui/input";
@@ -33,10 +34,21 @@ const ContactPage = () => {
     resolver: zodResolver(contactSchema),
   });
 
-  const onSubmit = (data: ContactFormData) => {
-    console.log("Contact form submitted:", data);
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const onSubmit = async (data: ContactFormData) => {
+    try {
+      const { error } = await supabase.from("contact_submissions").insert({
+        name: data.name,
+        email: data.email,
+        phone: data.phone || null,
+        interest: data.interest,
+        message: data.message,
+      });
+      if (error) throw error;
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      console.error("Error submitting contact form:", err);
+    }
   };
 
   if (submitted) {
