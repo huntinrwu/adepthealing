@@ -29,7 +29,7 @@ const faqs = [
   {
     question: "How many acupuncture sessions will I need?",
     answer:
-      "The number of sessions depends on your specific condition, its severity, and how long you've had it. Acute conditions may respond in 3–6 sessions, while chronic conditions typically require 8–12 sessions or more. During your initial consultation, we'll create a personalized treatment plan with a recommended frequency. Many patients notice improvement after their first few visits.",
+      "It depends on your condition and severity. Acute issues may respond in 3–6 sessions; chronic conditions typically need 8–12 or more. We'll create a personalized plan during your initial consultation.",
   },
   {
     question: "Is acupuncture safe?",
