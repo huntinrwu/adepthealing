@@ -4,7 +4,7 @@ import { Star } from "lucide-react";
 const testimonials = [
   {
     name: "Sarah M.",
-    text: "After years of chronic back pain, Adept Healing gave me my life back. The acupuncture treatments were gentle yet incredibly effective. I finally feel like myself again.",
+    text: "After years of chronic back pain, Adept Healing gave me my life back. The treatments were gentle yet incredibly effective.",
     rating: 5,
     condition: "Chronic Pain Relief",
   },
