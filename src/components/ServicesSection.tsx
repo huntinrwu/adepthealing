@@ -8,7 +8,7 @@ const services = [
   {
     title: "Acupuncture for Pain Relief",
     description:
-      "Targeted meridian therapy for chronic pain, back pain, neck pain, migraines, sciatica, and joint discomfort. Restore energy flow and lasting relief.",
+      "Targeted acupuncture therapy for back pain, neck pain, migraines, sciatica, joint pain, shoulder pain, knee pain, and more. If it hurts, we can help.",
     image: acupunctureImg,
     alt: "Professional acupuncture treatment with fine needles for chronic pain relief and healing in Herndon VA",
   },
