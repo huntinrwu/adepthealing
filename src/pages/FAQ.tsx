@@ -14,7 +14,7 @@ const faqs = [
   {
     question: "What is acupuncture and how does it work?",
     answer:
-      "Acupuncture is a key component of traditional Chinese medicine (TCM) that involves inserting very thin, sterile needles into specific points on the body called meridian points. This stimulates the body's natural healing response, promotes energy (Qi) flow, reduces inflammation, and triggers the release of endorphins — your body's natural pain-relieving chemicals. Acupuncture has been practiced for over 3,000 years and is recognized by the World Health Organization for treating numerous conditions.",
+      "Acupuncture involves inserting thin, sterile needles into specific meridian points to stimulate healing, promote Qi flow, reduce inflammation, and release endorphins. Recognized by the WHO for treating numerous conditions, it's been practiced for over 3,000 years.",
   },
   {
     question: "Does acupuncture hurt?",
