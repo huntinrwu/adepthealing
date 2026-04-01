@@ -19,7 +19,7 @@ const faqs = [
   {
     question: "Does acupuncture hurt?",
     answer:
-      "Most patients feel little to no pain during acupuncture. The needles used are extremely thin — much thinner than a hypodermic needle. You may feel a slight tingling, warmth, or dull pressure at the insertion point, which is a sign that the treatment is working. Many patients find the experience deeply relaxing, and some even fall asleep during sessions.",
+      "Most patients feel little to no pain. The needles are extremely thin — much thinner than a hypodermic needle. You may feel a slight tingling or warmth, which means the treatment is working. Many patients find it deeply relaxing.",
   },
   {
     question: "What conditions can acupuncture treat?",
