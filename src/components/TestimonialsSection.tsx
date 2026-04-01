@@ -4,19 +4,19 @@ import { Star } from "lucide-react";
 const testimonials = [
   {
     name: "Sarah M.",
-    text: "After years of chronic back pain, Adept Healing gave me my life back. The acupuncture treatments were gentle yet incredibly effective. I finally feel like myself again.",
+    text: "After years of chronic back pain, Adept Healing gave me my life back. The treatments were gentle yet incredibly effective.",
     rating: 5,
     condition: "Chronic Pain Relief",
   },
   {
     name: "James L.",
-    text: "I was skeptical at first, but the holistic approach here changed everything. Not only did my migraines reduce dramatically, but my overall energy and sleep improved too.",
+    text: "I was skeptical at first, but the holistic approach changed everything. My migraines reduced dramatically and my sleep improved too.",
     rating: 5,
     condition: "Migraine & Sleep",
   },
   {
     name: "Maria C.",
-    text: "The herbal medicine program combined with acupuncture helped me manage my anxiety naturally. The team is warm, knowledgeable, and truly cares about your well-being.",
+    text: "Acupuncture combined with herbal medicine helped me manage my anxiety naturally. The team is warm and truly cares.",
     rating: 5,
     condition: "Anxiety & Stress",
   },
@@ -40,8 +40,7 @@ const TestimonialsSection = () => {
             Real Healing, Real Results
           </h2>
           <p className="body-md text-muted-foreground max-w-xl mx-auto">
-            Hear from our patients who've experienced transformative relief through 
-            acupuncture and holistic care at Adept Healing.
+            Real results from our patients at Adept Healing.
           </p>
         </motion.div>
 

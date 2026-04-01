@@ -14,12 +14,12 @@ const faqs = [
   {
     question: "What is acupuncture and how does it work?",
     answer:
-      "Acupuncture is a key component of traditional Chinese medicine (TCM) that involves inserting very thin, sterile needles into specific points on the body called meridian points. This stimulates the body's natural healing response, promotes energy (Qi) flow, reduces inflammation, and triggers the release of endorphins — your body's natural pain-relieving chemicals. Acupuncture has been practiced for over 3,000 years and is recognized by the World Health Organization for treating numerous conditions.",
+      "Acupuncture involves inserting thin, sterile needles into specific meridian points to stimulate healing, promote Qi flow, reduce inflammation, and release endorphins. Recognized by the WHO for treating numerous conditions, it's been practiced for over 3,000 years.",
   },
   {
     question: "Does acupuncture hurt?",
     answer:
-      "Most patients feel little to no pain during acupuncture. The needles used are extremely thin — much thinner than a hypodermic needle. You may feel a slight tingling, warmth, or dull pressure at the insertion point, which is a sign that the treatment is working. Many patients find the experience deeply relaxing, and some even fall asleep during sessions.",
+      "Most patients feel little to no pain. The needles are extremely thin — much thinner than a hypodermic needle. You may feel a slight tingling or warmth, which means the treatment is working. Many patients find it deeply relaxing.",
   },
   {
     question: "What conditions can acupuncture treat?",
@@ -29,42 +29,42 @@ const faqs = [
   {
     question: "How many acupuncture sessions will I need?",
     answer:
-      "The number of sessions depends on your specific condition, its severity, and how long you've had it. Acute conditions may respond in 3–6 sessions, while chronic conditions typically require 8–12 sessions or more. During your initial consultation, we'll create a personalized treatment plan with a recommended frequency. Many patients notice improvement after their first few visits.",
+      "It depends on your condition and severity. Acute issues may respond in 3–6 sessions; chronic conditions typically need 8–12 or more. We'll create a personalized plan during your initial consultation.",
   },
   {
     question: "Is acupuncture safe?",
     answer:
-      "Yes, acupuncture is very safe when performed by a licensed, trained acupuncturist. We use only sterile, single-use, disposable needles. Side effects are rare and typically minor, such as slight bruising at a needle site. Acupuncture is a drug-free therapy with no risk of addiction or dangerous interactions with medications.",
+      "Yes. We use sterile, single-use, disposable needles. Side effects are rare and minor. Acupuncture is drug-free with no risk of addiction or medication interactions.",
   },
   {
     question: "What should I expect during my first acupuncture visit?",
     answer:
-      "Your first visit includes a comprehensive health assessment where we discuss your medical history, current symptoms, lifestyle, diet, and wellness goals. We'll examine your tongue, check your pulse, and develop a personalized treatment plan. The first session typically lasts 60–90 minutes. You can fill out our New Patient Intake Form online before your visit to save time.",
+      "Your first visit includes a health assessment covering medical history, symptoms, and wellness goals. We'll check your pulse, examine your tongue, and create a treatment plan. First sessions run 60–90 minutes. Fill out our Patient Intake Form online to save time.",
   },
   {
     question: "Does insurance cover acupuncture?",
     answer:
-      "Yes! We accept most major insurance plans for acupuncture treatments. Coverage varies by provider and plan, so we recommend contacting your insurance company to verify your specific acupuncture benefits. Our team can also help verify your coverage before your first visit. For plans we don't directly bill, we can provide you with a superbill (detailed receipt) that you can submit to your insurance for reimbursement.",
+      "Yes! We accept most major insurance plans. Coverage varies, so contact your provider to verify benefits — our team can help. For plans we don't bill directly, we provide a superbill for reimbursement.",
   },
   {
     question: "How should I prepare for an acupuncture session?",
     answer:
-      "Eat a light meal 1–2 hours before your appointment — don't come on an empty stomach. Wear loose, comfortable clothing that can be rolled up above your elbows and knees. Avoid caffeine and alcohol before your session. Stay hydrated. After treatment, rest and drink plenty of water to support your body's healing response.",
+      "Eat a light meal 1–2 hours before. Wear loose clothing. Avoid caffeine and alcohol. Stay hydrated, and rest after treatment.",
   },
   {
     question: "Where is your acupuncture clinic located?",
     answer:
-      "Adept Healing is located at 1033 Sterling Road, Suite 105, Herndon, VA. We serve patients throughout Northern Virginia including Reston, Sterling, Ashburn, Leesburg, Chantilly, Centreville, Fairfax, and the greater Washington DC metropolitan area. We're open on Saturdays by appointment.",
+      "We're at 1033 Sterling Road, Suite 105, Herndon, VA — serving Reston, Sterling, Ashburn, Leesburg, Chantilly, Fairfax, and the greater DC area. Open Saturdays by appointment.",
   },
   {
     question: "Can acupuncture help with anxiety and depression?",
     answer:
-      "Acupuncture has shown promising results for anxiety and depression. It helps regulate the nervous system, reduce cortisol levels, and stimulate the production of serotonin and endorphins — neurotransmitters associated with mood regulation. Many patients report feeling calmer, more focused, and emotionally balanced after regular acupuncture sessions.",
+      "Yes. Acupuncture helps regulate the nervous system, lower cortisol, and boost serotonin and endorphins. Patients report feeling calmer, more focused, and emotionally balanced.",
   },
   {
     question: "Is acupuncture effective for back pain and sciatica?",
     answer:
-      "Acupuncture is one of the most well-researched and effective treatments for back pain and sciatica. The American College of Physicians recommends acupuncture as a first-line treatment for chronic low back pain. It reduces inflammation, relaxes tight muscles, improves circulation, and stimulates the body's natural pain-relief mechanisms.",
+      "Absolutely. The American College of Physicians recommends acupuncture as a first-line treatment for chronic low back pain. It reduces inflammation, relaxes tight muscles, and stimulates natural pain relief.",
   },
 ];
 

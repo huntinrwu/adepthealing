@@ -5,17 +5,17 @@ const values = [
   {
     icon: Heart,
     title: "Compassionate Care",
-    description: "Every treatment begins with empathy and deep listening to understand your unique health journey.",
+    description: "Every treatment starts with listening to your unique health journey.",
   },
   {
     icon: Leaf,
     title: "Natural Healing",
-    description: "We harness the body's innate ability to heal using time-tested traditional Chinese medicine techniques.",
+    description: "Time-tested traditional Chinese medicine techniques that support the body's innate healing.",
   },
   {
     icon: Shield,
     title: "Evidence-Informed",
-    description: "Our practice integrates ancient wisdom with modern understanding of anatomy and physiology.",
+    description: "Ancient wisdom integrated with modern anatomy and physiology.",
   },
   {
     icon: Sparkles,
@@ -43,15 +43,12 @@ const AboutSection = () => {
               Rooted in Tradition,<br /> Focused on You
             </h2>
             <p className="body-lg text-muted-foreground mb-6">
-              At Adept Healing, we believe true wellness is a journey of balance and harmony. 
-              Our licensed acupuncturists bring years of clinical experience and a deep reverence 
-              for traditional Chinese medicine to every session.
+              Licensed acupuncturists with years of clinical experience and a deep 
+              reverence for traditional Chinese medicine.
             </p>
             <p className="body-md text-muted-foreground mb-8">
-              Whether you're seeking relief from chronic pain, managing stress and anxiety, 
-              addressing digestive issues, or improving sleep quality, our personalized treatment 
-              plans are designed to restore your body's natural equilibrium and support 
-              long-term vitality.
+              Whether you're managing chronic pain, stress, digestive issues, or sleep quality — 
+              our personalized plans restore balance and support long-term vitality.
             </p>
             <a
               href="#contact"

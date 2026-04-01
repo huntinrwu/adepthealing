@@ -8,28 +8,28 @@ const services = [
   {
     title: "Acupuncture for Pain Relief",
     description:
-      "Precision needle therapy targeting meridian points to relieve chronic pain, back pain, neck pain, migraines, sciatica, and joint discomfort. Restore energy flow and promote deep, lasting healing throughout the body.",
+      "Targeted meridian therapy for chronic pain, back pain, neck pain, migraines, sciatica, and joint discomfort. Restore energy flow and lasting relief.",
     image: acupunctureImg,
     alt: "Professional acupuncture treatment with fine needles for chronic pain relief and healing in Herndon VA",
   },
   {
     title: "Stress & Anxiety Acupuncture",
     description:
-      "Specialized acupuncture protocols designed to calm the nervous system, reduce anxiety, improve sleep quality, and restore emotional balance. Experience profound relaxation and mental clarity.",
+      "Calm the nervous system, reduce anxiety, improve sleep, and restore emotional balance with specialized acupuncture protocols.",
     image: meditationImg,
     alt: "Acupuncture for stress relief anxiety management and improved sleep quality",
   },
   {
     title: "Digestive & General Wellness",
     description:
-      "Holistic acupuncture treatments supporting digestive health, immune function, allergy relief, and overall vitality. Restore your body's natural balance and promote long-term well-being.",
+      "Support digestive health, immune function, allergy relief, and overall vitality. Restore your body's natural balance.",
     image: digestiveImg,
     alt: "Acupuncture for digestive health general wellness and immune support in Northern Virginia",
   },
   {
     title: "Sports Injury & Recovery",
     description:
-      "Accelerate healing from sports injuries, muscle strains, tendonitis, and post-surgical recovery. Acupuncture reduces inflammation, improves circulation, and restores mobility faster.",
+      "Accelerate healing from sports injuries, muscle strains, tendonitis, and post-surgical recovery. Reduce inflammation and restore mobility.",
     image: sportsImg,
     alt: "Sports acupuncture for injury recovery muscle strain and athletic performance",
   },
@@ -53,8 +53,7 @@ const ServicesSection = () => {
             Acupuncture Services
           </h2>
           <p className="body-md text-muted-foreground max-w-2xl mx-auto">
-            From chronic pain and stress relief to digestive wellness and sports recovery, 
-            our acupuncture treatments address the root cause of imbalance — not just the symptoms.
+            Addressing the root cause of imbalance — not just the symptoms.
           </p>
         </motion.div>
 

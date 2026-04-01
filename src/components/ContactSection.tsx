@@ -19,8 +19,7 @@ const ContactSection = () => {
             Begin Your Healing Journey
           </h2>
           <p className="body-md text-muted-foreground max-w-xl mx-auto">
-            Ready to experience the transformative power of acupuncture? 
-            Reach out to schedule your appointment at our Herndon, Virginia clinic.
+            Schedule your acupuncture appointment at our Herndon, Virginia clinic.
           </p>
         </motion.div>
 
