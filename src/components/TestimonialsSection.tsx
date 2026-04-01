@@ -17,7 +17,7 @@ const testimonials = [
   },
   {
     name: "Maria C.",
-    text: "Acupuncture combined with herbal medicine helped me manage my anxiety naturally. The team is warm and truly cares.",
+    text: "Acupuncture helped me manage my anxiety naturally. Max is warm, skilled, and truly cares about your wellbeing.",
     rating: 5,
     condition: "Anxiety & Stress",
   },
