@@ -10,7 +10,7 @@ const values = [
   {
     icon: Leaf,
     title: "Natural Healing",
-    description: "We harness the body's innate ability to heal using time-tested traditional Chinese medicine techniques.",
+    description: "Time-tested traditional Chinese medicine techniques that support the body's innate healing.",
   },
   {
     icon: Shield,
