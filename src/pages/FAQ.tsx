@@ -34,7 +34,7 @@ const faqs = [
   {
     question: "Is acupuncture safe?",
     answer:
-      "Yes, acupuncture is very safe when performed by a licensed, trained acupuncturist. We use only sterile, single-use, disposable needles. Side effects are rare and typically minor, such as slight bruising at a needle site. Acupuncture is a drug-free therapy with no risk of addiction or dangerous interactions with medications.",
+      "Yes. We use sterile, single-use, disposable needles. Side effects are rare and minor. Acupuncture is drug-free with no risk of addiction or medication interactions.",
   },
   {
     question: "What should I expect during my first acupuncture visit?",
