@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ThemeToggle from "./ThemeToggle";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -68,6 +69,7 @@ const Navbar = () => {
                 </a>
               )
             )}
+            <ThemeToggle />
             <Link
               to="/contact"
               className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
@@ -125,13 +127,16 @@ const Navbar = () => {
                   </a>
                 )
               )}
-              <Link
-                to="/contact"
-                onClick={() => setIsOpen(false)}
-                className="block text-center bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium"
-              >
-                Book Now
-              </Link>
+              <div className="flex items-center justify-between">
+                <ThemeToggle />
+                <Link
+                  to="/contact"
+                  onClick={() => setIsOpen(false)}
+                  className="block text-center bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium"
+                >
+                  Book Now
+                </Link>
+              </div>
             </div>
           </motion.div>
         )}
