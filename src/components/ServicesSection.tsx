@@ -86,6 +86,26 @@ const ServicesSection = () => {
             </motion.article>
           ))}
         </div>
+
+        {/* CTA Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mt-16 bg-primary/10 rounded-2xl p-10 text-center"
+        >
+          <h3 className="heading-md text-foreground mb-3">Not sure which treatment is right for you?</h3>
+          <p className="body-md text-muted-foreground mb-6 max-w-xl mx-auto">
+            Reach out and we'll help you find the best path to feeling better.
+          </p>
+          <Link
+            to="/contact"
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3 rounded-full font-display font-medium hover:opacity-90 transition-opacity"
+          >
+            Book a Consultation <ArrowRight className="w-4 h-4" />
+          </Link>
+        </motion.div>
       </div>
     </section>
   );
