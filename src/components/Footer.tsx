@@ -9,10 +9,14 @@ const Footer = () => {
           <div>
             <h3 className="font-display text-2xl font-semibold mb-4">Adept Healing</h3>
             <p className="text-primary-foreground/70 text-sm leading-relaxed">
-              Expert acupuncture, traditional Chinese medicine, herbal therapy, and holistic 
-              wellness services. Restoring balance and vitality through compassionate, 
-              evidence-informed care.
+              Expert acupuncture and holistic wellness services in Herndon, Virginia. 
+              Restoring balance and vitality through compassionate, evidence-informed 
+              acupuncture care.
             </p>
+            <address className="text-primary-foreground/60 text-sm mt-4 not-italic leading-relaxed">
+              1033 Sterling Road, Suite 105<br />
+              Herndon, VA
+            </address>
           </div>
 
           {/* Quick Links */}
@@ -29,6 +33,12 @@ const Footer = () => {
                 </a>
               ))}
               <Link
+                to="/faq"
+                className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+              >
+                FAQ
+              </Link>
+              <Link
                 to="/intake"
                 className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
               >
@@ -37,16 +47,16 @@ const Footer = () => {
             </nav>
           </div>
 
-          {/* Services SEO */}
+          {/* Acupuncture Services SEO */}
           <div>
-            <h4 className="font-display text-lg font-medium mb-4">Our Treatments</h4>
+            <h4 className="font-display text-lg font-medium mb-4">Acupuncture For</h4>
             <ul className="space-y-2 text-sm text-primary-foreground/70">
-              <li>Acupuncture for Pain Relief</li>
-              <li>Chinese Herbal Medicine</li>
-              <li>Cupping & Moxibustion</li>
-              <li>Stress & Anxiety Management</li>
+              <li>Chronic Pain & Back Pain</li>
+              <li>Migraines & Headaches</li>
+              <li>Stress & Anxiety Relief</li>
               <li>Fertility & Women's Health</li>
               <li>Sports Injury Recovery</li>
+              <li>Insomnia & Sleep Issues</li>
             </ul>
           </div>
         </div>
@@ -56,7 +66,7 @@ const Footer = () => {
             &copy; {new Date().getFullYear()} Adept Healing. All rights reserved.
           </p>
           <p className="text-xs text-primary-foreground/40">
-            Acupuncture &bull; Traditional Chinese Medicine &bull; Holistic Wellness
+            Acupuncture &bull; Herndon, VA &bull; Holistic Wellness
           </p>
         </div>
       </div>

@@ -19,17 +19,17 @@ const ContactSection = () => {
             Begin Your Healing Journey
           </h2>
           <p className="body-md text-muted-foreground max-w-xl mx-auto">
-            Ready to experience the transformative power of acupuncture and holistic medicine? 
-            Reach out to schedule your first appointment.
+            Ready to experience the transformative power of acupuncture? 
+            Reach out to schedule your appointment at our Herndon, Virginia clinic.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {[
-            { icon: MapPin, label: "Location", value: "Contact us for our clinic address", sub: "" },
+            { icon: MapPin, label: "Location", value: "1033 Sterling Road", sub: "Suite 105, Herndon, VA" },
             { icon: Phone, label: "Phone", value: "Call for appointment", sub: "" },
             { icon: Mail, label: "Email", value: "info@adepthealing.com", sub: "" },
-            { icon: Clock, label: "Hours", value: "Mon–Fri: 9am–6pm", sub: "Sat: 10am–3pm" },
+            { icon: Clock, label: "Hours", value: "Saturday: By appointment", sub: "Mon–Fri & Sun: Closed" },
           ].map((item, index) => (
             <motion.div
               key={item.label}
@@ -46,6 +46,26 @@ const ContactSection = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Google Maps Embed */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="rounded-2xl overflow-hidden shadow-sm"
+        >
+          <iframe
+            title="Adept Healing acupuncture clinic location in Herndon Virginia"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3101.5!2d-77.386!3d38.969!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2s1033+Sterling+Rd+Suite+105+Herndon+VA!5e0!3m2!1sen!2sus!4v1700000000000"
+            width="100%"
+            height="350"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </motion.div>
       </div>
     </section>
   );

@@ -9,7 +9,7 @@ const HeroSection = () => {
       <div className="absolute inset-0">
         <img
           src={heroBg}
-          alt="Zen stones balanced in a serene bamboo garden representing holistic healing and balance"
+          alt="Serene acupuncture clinic environment representing holistic healing and balance in Herndon Virginia"
           className="w-full h-full object-cover"
           width={1920}
           height={1080}
@@ -25,7 +25,7 @@ const HeroSection = () => {
           transition={{ duration: 0.8 }}
           className="text-primary-foreground/80 font-body text-sm tracking-[0.3em] uppercase mb-6"
         >
-          Traditional Chinese Medicine &bull; Acupuncture &bull; Holistic Wellness
+          Acupuncture &bull; Holistic Wellness &bull; Herndon, VA
         </motion.p>
 
         <motion.h1
@@ -34,7 +34,7 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="heading-xl text-primary-foreground mb-6"
         >
-          Energy. Flow. Heal.
+          Restore. Rebalance. Heal.
         </motion.h1>
 
         <motion.p
@@ -43,9 +43,9 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="body-lg text-primary-foreground/90 max-w-2xl mx-auto mb-10"
         >
-          Adept Healing provides expert acupuncture and holistic wellness services 
-          rooted in traditional Chinese medicine. Restore balance, relieve pain, 
-          and nurture your body's natural healing power.
+          Adept Healing provides expert acupuncture in Herndon, Virginia. 
+          Relieve chronic pain, reduce stress, and nurture your body's 
+          natural healing power with personalized treatments.
         </motion.p>
 
         <motion.div
@@ -68,7 +68,7 @@ const HeroSection = () => {
             }}
             className="border-2 border-primary-foreground/50 text-primary-foreground px-8 py-4 rounded-full text-lg font-display font-medium hover:bg-primary-foreground/10 transition-all duration-300"
           >
-            Explore Our Services
+            Explore Services
           </a>
         </motion.div>
       </div>
