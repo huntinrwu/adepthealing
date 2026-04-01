@@ -59,7 +59,7 @@ const faqs = [
   {
     question: "Can acupuncture help with anxiety and depression?",
     answer:
-      "Acupuncture has shown promising results for anxiety and depression. It helps regulate the nervous system, reduce cortisol levels, and stimulate the production of serotonin and endorphins — neurotransmitters associated with mood regulation. Many patients report feeling calmer, more focused, and emotionally balanced after regular acupuncture sessions.",
+      "Yes. Acupuncture helps regulate the nervous system, lower cortisol, and boost serotonin and endorphins. Patients report feeling calmer, more focused, and emotionally balanced.",
   },
   {
     question: "Is acupuncture effective for back pain and sciatica?",
