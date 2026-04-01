@@ -15,7 +15,7 @@ const services = [
   {
     title: "Stress & Anxiety Acupuncture",
     description:
-      "Specialized acupuncture protocols designed to calm the nervous system, reduce anxiety, improve sleep quality, and restore emotional balance. Experience profound relaxation and mental clarity.",
+      "Calm the nervous system, reduce anxiety, improve sleep, and restore emotional balance with specialized acupuncture protocols.",
     image: meditationImg,
     alt: "Acupuncture for stress relief anxiety management and improved sleep quality",
   },
