@@ -22,7 +22,7 @@ const services = [
   {
     title: "Digestive & General Wellness",
     description:
-      "Holistic acupuncture treatments supporting digestive health, immune function, allergy relief, and overall vitality. Restore your body's natural balance and promote long-term well-being.",
+      "Support digestive health, immune function, allergy relief, and overall vitality. Restore your body's natural balance.",
     image: digestiveImg,
     alt: "Acupuncture for digestive health general wellness and immune support in Northern Virginia",
   },
