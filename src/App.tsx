@@ -8,6 +8,8 @@ import Index from "./pages/Index.tsx";
 import IntakeForm from "./pages/IntakeForm.tsx";
 import ContactPage from "./pages/ContactPage.tsx";
 import FAQ from "./pages/FAQ.tsx";
+import FairfaxCountyAcupuncture from "./pages/FairfaxCountyAcupuncture.tsx";
+import AreasWeServe from "./pages/AreasWeServe.tsx";
 import AdminLogin from "./pages/AdminLogin.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
 import NotFound from "./pages/NotFound.tsx";
