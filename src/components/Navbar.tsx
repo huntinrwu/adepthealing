@@ -34,10 +34,10 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-12">
+        <div className="flex items-center justify-between h-16 md:h-20">
           <Link to="/" className="flex items-center gap-3">
-            <span className="font-display text-2xl font-semibold tracking-tight text-foreground">
+            <span className="font-display text-xl md:text-2xl font-semibold tracking-tight text-foreground">
               Adept Healing
             </span>
           </Link>
