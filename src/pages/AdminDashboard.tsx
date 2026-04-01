@@ -110,8 +110,8 @@ const AdminDashboard = () => {
       action,
       target_table: targetTable,
       target_id: targetId,
-      details,
-    });
+      details: details as Record<string, unknown>,
+    } as never);
   };
 
   const filteredContacts = useMemo(() => {
