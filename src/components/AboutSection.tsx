@@ -5,7 +5,7 @@ const values = [
   {
     icon: Heart,
     title: "Compassionate Care",
-    description: "Every treatment begins with empathy and deep listening to understand your unique health journey.",
+    description: "Every treatment starts with listening to your unique health journey.",
   },
   {
     icon: Leaf,
