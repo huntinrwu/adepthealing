@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import acupunctureImg from "@/assets/acupuncture-treatment.jpg";
 import meditationImg from "@/assets/wellness-meditation.jpg";
-import digestiveImg from "@/assets/digestive-acupuncture.jpg";
+import digestiveImg from "@/assets/digestive-acupuncture-new.jpg";
 import sportsImg from "@/assets/sports-acupuncture.jpg";
 
 const services = [
