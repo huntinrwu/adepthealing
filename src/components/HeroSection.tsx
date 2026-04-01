@@ -1,11 +1,9 @@
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const HeroSection = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
       <div className="absolute inset-0">
         <img
           src={heroBg}
@@ -17,43 +15,22 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-foreground/40" />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 text-center px-4 md:px-6 max-w-4xl mx-auto pt-16 md:pt-0">
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-primary-foreground/80 font-body text-sm tracking-[0.3em] uppercase mb-6"
-        >
+      <div className="relative z-10 text-center px-4 md:px-6 max-w-4xl mx-auto pt-16 md:pt-0 animate-fade-in">
+        <p className="text-primary-foreground/80 font-body text-sm tracking-[0.3em] uppercase mb-6">
           Acupuncture &bull; Holistic Wellness &bull; Herndon, VA
-        </motion.p>
+        </p>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="heading-xl text-primary-foreground mb-6"
-        >
+        <h1 className="heading-xl text-primary-foreground mb-6">
           Restore. Rebalance. Heal.
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="body-lg text-primary-foreground/90 max-w-2xl mx-auto mb-10"
-        >
-          Adept Healing provides expert acupuncture in Herndon, Virginia. 
-          Relieve chronic pain, reduce stress, and nurture your body's 
+        <p className="body-lg text-primary-foreground/90 max-w-2xl mx-auto mb-10">
+          Adept Healing provides expert acupuncture in Herndon, Virginia.
+          Relieve chronic pain, reduce stress, and nurture your body's
           natural healing power with personalized treatments.
-        </motion.p>
+        </p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
-        >
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             to="/contact"
             className="bg-primary text-primary-foreground px-6 py-3.5 md:px-8 md:py-4 rounded-full text-base md:text-lg font-display font-medium hover:opacity-90 transition-all duration-300 shadow-lg min-h-[48px] flex items-center justify-center"
@@ -70,24 +47,14 @@ const HeroSection = () => {
           >
             Explore Services
           </a>
-        </motion.div>
+        </div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="w-6 h-10 border-2 border-primary-foreground/40 rounded-full flex items-start justify-center pt-2"
-        >
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-fade-in" style={{ animationDelay: "1s" }}>
+        <div className="w-6 h-10 border-2 border-primary-foreground/40 rounded-full flex items-start justify-center pt-2 animate-bounce-slow">
           <div className="w-1.5 h-1.5 bg-primary-foreground/60 rounded-full" />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </section>
   );
 };
