@@ -12,7 +12,7 @@ const jsonLd = {
   "@type": "MedicalBusiness",
   name: "Adept Healing",
   description:
-    "Expert acupuncture and holistic wellness services in Herndon, Virginia. Pain relief, stress management, digestive health, sports recovery, and whole-person care.",
+    "Expert acupuncture in Herndon, Virginia — serving Fairfax County, Northern Virginia, and the DC metro area. Over a decade of experience in pain relief, stress management, and whole-person care.",
   url: "https://adepthealing.com",
   telephone: "",
   address: {
@@ -20,7 +20,13 @@ const jsonLd = {
     streetAddress: "1033 Sterling Road, Suite 105",
     addressLocality: "Herndon",
     addressRegion: "VA",
+    postalCode: "20170",
     addressCountry: "US",
+  },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: 38.9697,
+    longitude: -77.3861,
   },
   openingHoursSpecification: [
     {
@@ -32,15 +38,33 @@ const jsonLd = {
   ],
   medicalSpecialty: "Acupuncture",
   availableService: [
-    { "@type": "MedicalTherapy", name: "Acupuncture for Pain Relief" },
+    { "@type": "MedicalTherapy", name: "Acupuncture for Back Pain" },
+    { "@type": "MedicalTherapy", name: "Acupuncture for Neck Pain" },
+    { "@type": "MedicalTherapy", name: "Acupuncture for Migraines" },
+    { "@type": "MedicalTherapy", name: "Acupuncture for Sciatica" },
     { "@type": "MedicalTherapy", name: "Acupuncture for Stress & Anxiety" },
-    { "@type": "MedicalTherapy", name: "Digestive & General Wellness Acupuncture" },
-    { "@type": "MedicalTherapy", name: "Sports Injury Acupuncture" },
+    { "@type": "MedicalTherapy", name: "Acupuncture for Sports Injuries" },
+    { "@type": "MedicalTherapy", name: "Acupuncture for Digestive Health" },
+    { "@type": "MedicalTherapy", name: "Acupuncture for Knee Pain" },
+    { "@type": "MedicalTherapy", name: "Acupuncture for Shoulder Pain" },
   ],
   priceRange: "$$",
   areaServed: [
-    "Herndon", "Reston", "Sterling", "Ashburn", "Leesburg",
-    "Chantilly", "Centreville", "Fairfax", "Northern Virginia",
+    { "@type": "City", name: "Herndon", containedInPlace: { "@type": "State", name: "Virginia" } },
+    { "@type": "City", name: "Reston" },
+    { "@type": "City", name: "Sterling" },
+    { "@type": "City", name: "Ashburn" },
+    { "@type": "City", name: "Leesburg" },
+    { "@type": "City", name: "Chantilly" },
+    { "@type": "City", name: "Centreville" },
+    { "@type": "City", name: "Fairfax" },
+    { "@type": "City", name: "Vienna" },
+    { "@type": "City", name: "Great Falls" },
+    { "@type": "City", name: "Tysons" },
+    { "@type": "AdministrativeArea", name: "Fairfax County" },
+    { "@type": "AdministrativeArea", name: "Loudoun County" },
+    { "@type": "AdministrativeArea", name: "Northern Virginia" },
+    { "@type": "AdministrativeArea", name: "Washington DC Metro Area" },
   ],
 };
 
