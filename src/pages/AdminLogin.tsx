@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,98 +18,35 @@ const AdminLogin = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError) {
-        setError(authError.message);
-        return;
-      }
-
+      const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      if (authError) { setError(authError.message); return; }
       if (data.user) {
-        // Check admin role
-        const { data: roleData, error: roleError } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.user.id)
-          .eq("role", "admin")
-          .maybeSingle();
-
-        if (roleError || !roleData) {
-          await supabase.auth.signOut();
-          setError("You do not have admin access.");
-          return;
-        }
-
+        const { data: roleData, error: roleError } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin").maybeSingle();
+        if (roleError || !roleData) { await supabase.auth.signOut(); setError("You do not have admin access."); return; }
         navigate("/admin");
       }
-    } catch {
-      setError("An unexpected error occurred.");
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError("An unexpected error occurred."); } finally { setLoading(false); }
   };
 
   return (
     <>
-      <Helmet>
-        <title>Admin Login | Adept Healing</title>
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
-
+      <Helmet><title>Admin Login | Adept Healing</title><meta name="robots" content="noindex, nofollow" /></Helmet>
       <Navbar />
       <main className="pt-20 bg-background min-h-screen flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md mx-6"
-        >
+        <div className="w-full max-w-md mx-6 animate-fade-in">
           <div className="bg-card rounded-2xl p-8 shadow-sm">
             <h1 className="heading-md text-foreground text-center mb-6">Admin Login</h1>
-
-            {error && (
-              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg mb-4">
-                {error}
-              </div>
-            )}
-
+            {error && <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg mb-4">{error}</div>}
             <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="mt-1"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
-              >
+              <div><Label htmlFor="email">Email</Label><Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="mt-1" /></div>
+              <div><Label htmlFor="password">Password</Label><Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="mt-1" /></div>
+              <button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
                 {loading ? "Signing in..." : "Sign In"}
               </button>
             </form>
           </div>
-        </motion.div>
+        </div>
       </main>
       <Footer />
     </>
