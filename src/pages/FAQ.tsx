@@ -39,7 +39,7 @@ const faqs = [
   {
     question: "What should I expect during my first acupuncture visit?",
     answer:
-      "Your first visit includes a comprehensive health assessment where we discuss your medical history, current symptoms, lifestyle, diet, and wellness goals. We'll examine your tongue, check your pulse, and develop a personalized treatment plan. The first session typically lasts 60–90 minutes. You can fill out our New Patient Intake Form online before your visit to save time.",
+      "Your first visit includes a health assessment covering medical history, symptoms, and wellness goals. We'll check your pulse, examine your tongue, and create a treatment plan. First sessions run 60–90 minutes. Fill out our Patient Intake Form online to save time.",
   },
   {
     question: "Does insurance cover acupuncture?",
