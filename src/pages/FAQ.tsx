@@ -64,7 +64,7 @@ const faqs = [
   {
     question: "Is acupuncture effective for back pain and sciatica?",
     answer:
-      "Acupuncture is one of the most well-researched and effective treatments for back pain and sciatica. The American College of Physicians recommends acupuncture as a first-line treatment for chronic low back pain. It reduces inflammation, relaxes tight muscles, improves circulation, and stimulates the body's natural pain-relief mechanisms.",
+      "Absolutely. The American College of Physicians recommends acupuncture as a first-line treatment for chronic low back pain. It reduces inflammation, relaxes tight muscles, and stimulates natural pain relief.",
   },
 ];
 
