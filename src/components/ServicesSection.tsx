@@ -29,7 +29,7 @@ const services = [
   {
     title: "Sports Injury & Recovery",
     description:
-      "Accelerate healing from sports injuries, muscle strains, tendonitis, and post-surgical recovery. Acupuncture reduces inflammation, improves circulation, and restores mobility faster.",
+      "Accelerate healing from sports injuries, muscle strains, tendonitis, and post-surgical recovery. Reduce inflammation and restore mobility.",
     image: sportsImg,
     alt: "Sports acupuncture for injury recovery muscle strain and athletic performance",
   },
