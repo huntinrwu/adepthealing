@@ -10,7 +10,7 @@ const testimonials = [
   },
   {
     name: "James L.",
-    text: "I was skeptical at first, but the holistic approach here changed everything. Not only did my migraines reduce dramatically, but my overall energy and sleep improved too.",
+    text: "I was skeptical at first, but the holistic approach changed everything. My migraines reduced dramatically and my sleep improved too.",
     rating: 5,
     condition: "Migraine & Sleep",
   },
