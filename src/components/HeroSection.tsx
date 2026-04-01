@@ -55,7 +55,7 @@ const HeroSection = () => {
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
           <Link
-            to="/intake"
+            to="/contact"
             className="bg-primary text-primary-foreground px-8 py-4 rounded-full text-lg font-display font-medium hover:opacity-90 transition-all duration-300 shadow-lg"
           >
             Schedule Your Healing

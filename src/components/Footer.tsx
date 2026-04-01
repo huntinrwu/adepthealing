@@ -23,7 +23,7 @@ const Footer = () => {
           <div>
             <h4 className="font-display text-lg font-medium mb-4">Quick Links</h4>
             <nav className="space-y-2">
-              {["Services", "About", "Testimonials", "Contact"].map((link) => (
+              {["Services", "About", "Testimonials"].map((link) => (
                 <a
                   key={link}
                   href={`/#${link.toLowerCase()}`}
@@ -32,6 +32,12 @@ const Footer = () => {
                   {link}
                 </a>
               ))}
+              <Link
+                to="/contact"
+                className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+              >
+                Contact Us
+              </Link>
               <Link
                 to="/faq"
                 className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
@@ -42,7 +48,7 @@ const Footer = () => {
                 to="/intake"
                 className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
               >
-                New Patient Intake Form
+                Patient Intake Form
               </Link>
             </nav>
           </div>

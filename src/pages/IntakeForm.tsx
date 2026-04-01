@@ -95,10 +95,10 @@ const IntakeForm = () => {
   return (
     <>
       <Helmet>
-        <title>New Patient Intake Form | Adept Healing Acupuncture</title>
+        <title>Patient Intake Form | Adept Healing Acupuncture | Herndon VA</title>
         <meta
           name="description"
-          content="Complete your new patient intake form for Adept Healing. Start your acupuncture and holistic wellness journey with our comprehensive health assessment."
+          content="Complete the patient intake form for Adept Healing acupuncture. Share your health history so we can create a personalized acupuncture treatment plan."
         />
         <link rel="canonical" href="https://adepthealing.com/intake" />
       </Helmet>
@@ -113,12 +113,12 @@ const IntakeForm = () => {
               className="text-center mb-12"
             >
               <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">
-                New Patient
+                Welcome
               </p>
               <h1 className="heading-lg text-foreground mb-4">Patient Intake Form</h1>
               <p className="body-md text-muted-foreground max-w-xl mx-auto">
                 Please fill out this form before your first visit. This helps us understand your health 
-                history and create a personalized treatment plan for your acupuncture care.
+                history and create a personalized acupuncture treatment plan.
               </p>
             </motion.div>
 
