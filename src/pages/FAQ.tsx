@@ -92,7 +92,7 @@ const FAQ = () => {
         />
         <meta
           name="keywords"
-          content="acupuncture FAQ, acupuncture questions, does acupuncture hurt, acupuncture benefits, acupuncture for pain, acupuncture for anxiety, acupuncture Herndon VA, acupuncture Northern Virginia, fertility acupuncture, acupuncture insurance, first acupuncture visit, acupuncture safety"
+          content="acupuncture FAQ, acupuncture questions, does acupuncture hurt, acupuncture benefits, acupuncture for pain, acupuncture for anxiety, acupuncture Herndon VA, acupuncture Northern Virginia, acupuncture insurance, first acupuncture visit, acupuncture safety"
         />
         <meta property="og:title" content="Acupuncture FAQ | Adept Healing | Herndon VA" />
         <meta
