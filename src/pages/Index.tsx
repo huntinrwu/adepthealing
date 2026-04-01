@@ -12,7 +12,7 @@ const jsonLd = {
   "@type": "MedicalBusiness",
   name: "Adept Healing",
   description:
-    "Expert acupuncture and holistic wellness services in Herndon, Virginia. Pain relief, stress management, fertility support, sports recovery, and whole-person care.",
+    "Expert acupuncture and holistic wellness services in Herndon, Virginia. Pain relief, stress management, digestive health, sports recovery, and whole-person care.",
   url: "https://adepthealing.com",
   telephone: "",
   address: {
