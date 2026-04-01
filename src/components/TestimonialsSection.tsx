@@ -4,13 +4,13 @@ import { Star } from "lucide-react";
 const testimonials = [
   {
     name: "Sarah M.",
-    text: "After years of chronic back pain, Adept Healing gave me my life back. The treatments were gentle yet incredibly effective.",
+    text: "Max helped me overcome years of chronic back pain. His treatments were gentle yet incredibly effective.",
     rating: 5,
     condition: "Chronic Pain Relief",
   },
   {
     name: "James L.",
-    text: "I was skeptical at first, but the holistic approach changed everything. My migraines reduced dramatically and my sleep improved too.",
+    text: "I was skeptical at first, but Max's holistic approach changed everything. My migraines reduced dramatically.",
     rating: 5,
     condition: "Migraine & Sleep",
   },
