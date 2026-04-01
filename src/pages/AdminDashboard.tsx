@@ -110,20 +110,34 @@ const AdminDashboard = () => {
 
       <div className="min-h-screen bg-sage-light">
         {/* Header */}
-        <header className="bg-background border-b border-border px-6 py-4">
+        <header className="bg-background border-b border-border px-6 py-5">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div>
-              <h1 className="font-display text-2xl font-semibold text-foreground">
-                Adept Healing Admin
-              </h1>
-              <p className="text-sm text-muted-foreground">Manage inquiries and patient intake forms</p>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-primary font-display font-semibold text-lg">A</span>
+              </div>
+              <div>
+                <h1 className="font-display text-2xl font-semibold text-foreground">
+                  Welcome Back 👋
+                </h1>
+                <p className="text-sm text-muted-foreground">Here's what's happening with your practice</p>
+              </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Sign Out
-            </button>
+            <div className="flex items-center gap-4">
+              <a
+                href="/"
+                className="text-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5"
+              >
+                ← Back to Website
+              </a>
+              <span className="text-border">|</span>
+              <button
+                onClick={handleLogout}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </header>
 
