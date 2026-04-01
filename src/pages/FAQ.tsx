@@ -49,7 +49,7 @@ const faqs = [
   {
     question: "How should I prepare for an acupuncture session?",
     answer:
-      "Eat a light meal 1–2 hours before your appointment — don't come on an empty stomach. Wear loose, comfortable clothing that can be rolled up above your elbows and knees. Avoid caffeine and alcohol before your session. Stay hydrated. After treatment, rest and drink plenty of water to support your body's healing response.",
+      "Eat a light meal 1–2 hours before. Wear loose clothing. Avoid caffeine and alcohol. Stay hydrated, and rest after treatment.",
   },
   {
     question: "Where is your acupuncture clinic located?",
