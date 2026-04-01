@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { MapPin, Phone, Mail, Clock } from "lucide-react";
+import { MapPin, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ContactSection = () => {
   return (
@@ -23,11 +24,9 @@ const ContactSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid md:grid-cols-3 gap-8 mb-12">
           {[
             { icon: MapPin, label: "Location", value: "1033 Sterling Road", sub: "Suite 105, Herndon, VA" },
-            { icon: Phone, label: "Phone", value: "Call for appointment", sub: "" },
-            { icon: Mail, label: "Email", value: "info@adepthealing.com", sub: "" },
             { icon: Clock, label: "Hours", value: "Saturday: By appointment", sub: "Mon–Fri & Sun: Closed" },
           ].map((item, index) => (
             <motion.div
@@ -44,6 +43,21 @@ const ContactSection = () => {
               {item.sub && <p className="text-sm text-muted-foreground">{item.sub}</p>}
             </motion.div>
           ))}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-background rounded-xl p-6 text-center shadow-sm flex flex-col items-center justify-center"
+          >
+            <h3 className="font-display text-lg font-semibold text-foreground mb-3">Get In Touch</h3>
+            <Link
+              to="/contact"
+              className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
+            >
+              Contact Us
+            </Link>
+          </motion.div>
         </div>
 
         {/* Google Maps Embed */}
