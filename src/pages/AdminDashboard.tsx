@@ -43,6 +43,15 @@ type IntakeSubmission = {
   created_at: string;
 };
 
+type AuditEntry = {
+  id: string;
+  created_at: string;
+  action: string;
+  target_table: string;
+  target_id: string | null;
+  details: Record<string, unknown> | null;
+};
+
 const STATUSES = ["new", "pending", "in_review", "contacted", "in_progress", "scheduled", "completed", "archived"] as const;
 
 const statusConfig: Record<string, { label: string; color: string; dot: string }> = {
@@ -69,24 +78,41 @@ const StatusBadge = ({ status }: { status: string }) => {
 const AdminDashboard = () => {
   const [contacts, setContacts] = useState<ContactSubmission[]>([]);
   const [intakes, setIntakes] = useState<IntakeSubmission[]>([]);
+  const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
   const [selectedContact, setSelectedContact] = useState<ContactSubmission | null>(null);
   const [selectedIntake, setSelectedIntake] = useState<IntakeSubmission | null>(null);
   const [editNotes, setEditNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const navigate = useNavigate();
 
   const fetchData = async () => {
-    const [contactRes, intakeRes] = await Promise.all([
+    const [contactRes, intakeRes, auditRes] = await Promise.all([
       supabase.from("contact_submissions").select("*").order("created_at", { ascending: false }),
       supabase.from("intake_submissions").select("*").order("created_at", { ascending: false }),
+      supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(200),
     ]);
     if (contactRes.data) setContacts(contactRes.data);
     if (intakeRes.data) setIntakes(intakeRes.data);
+    if (auditRes.data) setAuditLog(auditRes.data as AuditEntry[]);
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  const logAction = async (action: string, targetTable: string, targetId: string, details: Record<string, unknown> = {}) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from("audit_log").insert({
+      user_id: user.id,
+      action,
+      target_table: targetTable,
+      target_id: targetId,
+      details,
+    });
+  };
 
   const filteredContacts = useMemo(() => {
     let list = contacts;
@@ -119,13 +145,17 @@ const AdminDashboard = () => {
   }, [intakes, statusFilter, search]);
 
   const updateContactStatus = async (id: string, status: string) => {
+    const prev = contacts.find(c => c.id === id)?.status;
     await supabase.from("contact_submissions").update({ status }).eq("id", id);
+    await logAction("status_change", "contact_submissions", id, { from: prev, to: status });
     fetchData();
     if (selectedContact?.id === id) setSelectedContact({ ...selectedContact, status });
   };
 
   const updateIntakeStatus = async (id: string, status: string) => {
+    const prev = intakes.find(i => i.id === id)?.status;
     await supabase.from("intake_submissions").update({ status }).eq("id", id);
+    await logAction("status_change", "intake_submissions", id, { from: prev, to: status });
     fetchData();
     if (selectedIntake?.id === id) setSelectedIntake({ ...selectedIntake, status });
   };
@@ -134,8 +164,31 @@ const AdminDashboard = () => {
     setSaving(true);
     const table = type === "contact" ? "contact_submissions" : "intake_submissions";
     await supabase.from(table).update({ notes: editNotes }).eq("id", id);
+    await logAction("notes_updated", table, id, { notes_preview: editNotes.slice(0, 100) });
     await fetchData();
     setSaving(false);
+  };
+
+  const deleteRecord = async (type: "contact" | "intake", id: string) => {
+    setDeleting(true);
+    const table = type === "contact" ? "contact_submissions" : "intake_submissions";
+    const record = type === "contact"
+      ? contacts.find(c => c.id === id)
+      : intakes.find(i => i.id === id);
+
+    const summary = type === "contact"
+      ? { name: (record as ContactSubmission)?.name, email: (record as ContactSubmission)?.email }
+      : { name: `${(record as IntakeSubmission)?.first_name} ${(record as IntakeSubmission)?.last_name}`, email: (record as IntakeSubmission)?.email };
+
+    await logAction("deleted", table, id, summary);
+    await supabase.from(table).delete().eq("id", id);
+
+    if (type === "contact") setSelectedContact(null);
+    else setSelectedIntake(null);
+
+    setConfirmDelete(null);
+    setDeleting(false);
+    fetchData();
   };
 
   const handleLogout = async () => {
@@ -143,7 +196,6 @@ const AdminDashboard = () => {
     navigate("/admin/login");
   };
 
-  // Stats
   const countByStatus = (items: { status: string }[]) => {
     const counts: Record<string, number> = {};
     STATUSES.forEach(s => counts[s] = 0);
@@ -156,6 +208,45 @@ const AdminDashboard = () => {
   const actionNeeded = contactCounts.new + contactCounts.pending + intakeCounts.new + intakeCounts.pending;
   const inProgress = contactCounts.in_review + contactCounts.contacted + contactCounts.in_progress +
                      intakeCounts.in_review + intakeCounts.contacted + intakeCounts.in_progress;
+
+  const actionLabels: Record<string, string> = {
+    status_change: "Status Changed",
+    notes_updated: "Notes Updated",
+    deleted: "Record Deleted",
+  };
+
+  const tableLabels: Record<string, string> = {
+    contact_submissions: "Inquiry",
+    intake_submissions: "Patient",
+  };
+
+  const DeleteButton = ({ type, id, label }: { type: "contact" | "intake"; id: string; label: string }) => (
+    confirmDelete === id ? (
+      <div className="flex items-center gap-2 mt-3 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+        <p className="text-xs text-destructive flex-1">Permanently delete <strong>{label}</strong>? This cannot be undone.</p>
+        <button
+          onClick={() => deleteRecord(type, id)}
+          disabled={deleting}
+          className="text-xs bg-destructive text-destructive-foreground px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
+        >
+          {deleting ? "Deleting..." : "Delete"}
+        </button>
+        <button
+          onClick={() => setConfirmDelete(null)}
+          className="text-xs text-muted-foreground hover:text-foreground px-2 py-1.5"
+        >
+          Cancel
+        </button>
+      </div>
+    ) : (
+      <button
+        onClick={() => setConfirmDelete(id)}
+        className="mt-3 text-xs text-destructive hover:text-destructive/80 transition-colors"
+      >
+        🗑 Delete Record
+      </button>
+    )
+  );
 
   return (
     <AdminGuard>
@@ -220,20 +311,17 @@ const AdminDashboard = () => {
               >
                 All
               </button>
-              {STATUSES.map(s => {
-                const cfg = statusConfig[s];
-                return (
-                  <button
-                    key={s}
-                    onClick={() => setStatusFilter(s)}
-                    className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
-                      statusFilter === s ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    {cfg.label}
-                  </button>
-                );
-              })}
+              {STATUSES.map(s => (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+                    statusFilter === s ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {statusConfig[s].label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -246,6 +334,9 @@ const AdminDashboard = () => {
               <TabsTrigger value="intakes" className="gap-2">
                 Patients
                 {intakeCounts.new > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0">{intakeCounts.new}</Badge>}
+              </TabsTrigger>
+              <TabsTrigger value="audit" className="gap-2">
+                Audit Log
               </TabsTrigger>
             </TabsList>
 
@@ -261,7 +352,7 @@ const AdminDashboard = () => {
                     filteredContacts.map(c => (
                       <div
                         key={c.id}
-                        onClick={() => { setSelectedContact(c); setSelectedIntake(null); setEditNotes(c.notes || ""); }}
+                        onClick={() => { setSelectedContact(c); setSelectedIntake(null); setEditNotes(c.notes || ""); setConfirmDelete(null); }}
                         className={`bg-background rounded-lg p-4 shadow-sm cursor-pointer transition-all hover:shadow-md border-l-4 ${
                           selectedContact?.id === c.id ? "ring-2 ring-primary border-l-primary" : "border-l-transparent"
                         }`}
@@ -339,6 +430,10 @@ const AdminDashboard = () => {
                           {saving ? "Saving..." : "Save Notes"}
                         </button>
                       </div>
+
+                      <div className="border-t border-border pt-3">
+                        <DeleteButton type="contact" id={selectedContact.id} label={selectedContact.name} />
+                      </div>
                     </div>
                   ) : (
                     <div className="bg-background rounded-lg p-6 text-center text-muted-foreground text-sm">
@@ -361,7 +456,7 @@ const AdminDashboard = () => {
                     filteredIntakes.map(i => (
                       <div
                         key={i.id}
-                        onClick={() => { setSelectedIntake(i); setSelectedContact(null); setEditNotes(i.notes || ""); }}
+                        onClick={() => { setSelectedIntake(i); setSelectedContact(null); setEditNotes(i.notes || ""); setConfirmDelete(null); }}
                         className={`bg-background rounded-lg p-4 shadow-sm cursor-pointer transition-all hover:shadow-md border-l-4 ${
                           selectedIntake?.id === i.id ? "ring-2 ring-primary border-l-primary" : "border-l-transparent"
                         }`}
@@ -487,6 +582,10 @@ const AdminDashboard = () => {
                           {saving ? "Saving..." : "Save Notes"}
                         </button>
                       </div>
+
+                      <div className="border-t border-border pt-3">
+                        <DeleteButton type="intake" id={selectedIntake.id} label={`${selectedIntake.first_name} ${selectedIntake.last_name}`} />
+                      </div>
                     </div>
                   ) : (
                     <div className="bg-background rounded-lg p-6 text-center text-muted-foreground text-sm">
@@ -494,6 +593,52 @@ const AdminDashboard = () => {
                     </div>
                   )}
                 </div>
+              </div>
+            </TabsContent>
+
+            {/* AUDIT LOG TAB */}
+            <TabsContent value="audit">
+              <div className="space-y-2">
+                {auditLog.length === 0 ? (
+                  <div className="bg-background rounded-lg p-8 text-center text-muted-foreground text-sm">
+                    No activity logged yet. Actions will appear here as you manage records.
+                  </div>
+                ) : (
+                  auditLog.map(entry => {
+                    const details = entry.details || {};
+                    return (
+                      <div key={entry.id} className="bg-background rounded-lg p-4 shadow-sm flex items-start gap-4">
+                        <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                          entry.action === "deleted" ? "bg-destructive" :
+                          entry.action === "status_change" ? "bg-primary" : "bg-amber-500"
+                        }`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-medium text-foreground">{actionLabels[entry.action] || entry.action}</span>
+                            <span className="text-xs text-muted-foreground">•</span>
+                            <span className="text-xs text-muted-foreground">{tableLabels[entry.target_table] || entry.target_table}</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {entry.action === "status_change" && (
+                              <span>
+                                {statusConfig[(details as Record<string, string>).from]?.label || (details as Record<string, string>).from} → {statusConfig[(details as Record<string, string>).to]?.label || (details as Record<string, string>).to}
+                              </span>
+                            )}
+                            {entry.action === "deleted" && (
+                              <span>{(details as Record<string, string>).name} ({(details as Record<string, string>).email})</span>
+                            )}
+                            {entry.action === "notes_updated" && (
+                              <span className="line-clamp-1">{(details as Record<string, string>).notes_preview}</span>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground flex-shrink-0">
+                          {format(new Date(entry.created_at), "MMM d, yyyy h:mm a")}
+                        </p>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </TabsContent>
           </Tabs>
