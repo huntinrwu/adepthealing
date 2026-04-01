@@ -54,7 +54,7 @@ const faqs = [
   {
     question: "Where is your acupuncture clinic located?",
     answer:
-      "Adept Healing is located at 1033 Sterling Road, Suite 105, Herndon, VA. We serve patients throughout Northern Virginia including Reston, Sterling, Ashburn, Leesburg, Chantilly, Centreville, Fairfax, and the greater Washington DC metropolitan area. We're open on Saturdays by appointment.",
+      "We're at 1033 Sterling Road, Suite 105, Herndon, VA — serving Reston, Sterling, Ashburn, Leesburg, Chantilly, Fairfax, and the greater DC area. Open Saturdays by appointment.",
   },
   {
     question: "Can acupuncture help with anxiety and depression?",
