@@ -34,10 +34,10 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-12">
+        <div className="flex items-center justify-between h-16 md:h-20">
           <Link to="/" className="flex items-center gap-3">
-            <span className="font-display text-2xl font-semibold tracking-tight text-foreground">
+            <span className="font-display text-xl md:text-2xl font-semibold tracking-tight text-foreground">
               Adept Healing
             </span>
           </Link>
@@ -81,7 +81,7 @@ const Navbar = () => {
           {/* Mobile Toggle */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden text-foreground"
+            className="lg:hidden text-foreground p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Toggle menu"
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -98,14 +98,14 @@ const Navbar = () => {
             exit={{ opacity: 0, height: 0 }}
             className="lg:hidden bg-background border-b border-border overflow-hidden"
           >
-            <div className="px-6 py-6 space-y-4">
+            <div className="px-4 py-4 space-y-1">
               {navLinks.map((link) =>
                 isInternal(link.href) ? (
                   <Link
                     key={link.label}
                     to={link.href}
                     onClick={() => setIsOpen(false)}
-                    className="block text-lg font-display text-foreground hover:text-primary transition-colors"
+                    className="block text-lg font-display text-foreground hover:text-primary transition-colors py-3 min-h-[44px]"
                   >
                     {link.label}
                   </Link>
@@ -121,7 +121,7 @@ const Navbar = () => {
                         setIsOpen(false);
                       }
                     }}
-                    className="block text-lg font-display text-foreground hover:text-primary transition-colors"
+                    className="block text-lg font-display text-foreground hover:text-primary transition-colors py-3 min-h-[44px]"
                   >
                     {link.label}
                   </a>

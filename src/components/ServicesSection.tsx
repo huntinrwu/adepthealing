@@ -79,9 +79,9 @@ const ServicesSection = () => {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
               </div>
-              <div className="p-8">
-                <h3 className="heading-md text-foreground mb-3">{service.title}</h3>
-                <p className="body-md text-muted-foreground">{service.description}</p>
+              <div className="p-5 md:p-8">
+                <h3 className="heading-md text-foreground mb-2 md:mb-3">{service.title}</h3>
+                <p className="body-md text-muted-foreground text-sm md:text-base">{service.description}</p>
               </div>
             </motion.article>
           ))}
@@ -93,7 +93,7 @@ const ServicesSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mt-16 bg-primary/10 rounded-2xl p-10 text-center"
+          className="mt-12 md:mt-16 bg-primary/10 rounded-2xl p-6 md:p-10 text-center"
         >
           <h3 className="heading-md text-foreground mb-3">Not sure which treatment is right for you?</h3>
           <p className="body-md text-muted-foreground mb-6 max-w-xl mx-auto">
