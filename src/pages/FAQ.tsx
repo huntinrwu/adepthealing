@@ -88,7 +88,7 @@ const FAQ = () => {
         <title>Acupuncture FAQ | Common Questions | Adept Healing Herndon VA</title>
         <meta
           name="description"
-          content="Frequently asked questions about acupuncture at Adept Healing in Herndon, VA. Learn about acupuncture benefits, what to expect, pain relief, fertility support, insurance coverage, and more."
+          content="Frequently asked questions about acupuncture at Adept Healing in Herndon, VA. Learn about acupuncture benefits, what to expect, pain relief, insurance coverage, and more."
         />
         <meta
           name="keywords"
