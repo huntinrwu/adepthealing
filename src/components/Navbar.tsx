@@ -9,8 +9,7 @@ const navLinks = [
   { label: "About", href: "/#about" },
   { label: "Testimonials", href: "/#testimonials" },
   { label: "FAQ", href: "/faq" },
-  { label: "New Patient Intake", href: "/intake" },
-  { label: "Contact", href: "/#contact" },
+  { label: "Contact", href: "/contact" },
 ];
 
 const Navbar = () => {
@@ -69,7 +68,7 @@ const Navbar = () => {
               )
             )}
             <Link
-              to="/intake"
+              to="/contact"
               className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
             >
               Book Now
@@ -126,7 +125,7 @@ const Navbar = () => {
                 )
               )}
               <Link
-                to="/intake"
+                to="/contact"
                 onClick={() => setIsOpen(false)}
                 className="block text-center bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium"
               >
