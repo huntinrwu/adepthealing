@@ -44,7 +44,7 @@ const faqs = [
   {
     question: "Does insurance cover acupuncture?",
     answer:
-      "Many insurance plans now cover acupuncture, especially for pain management. Coverage varies by provider and plan. We recommend contacting your insurance company directly to verify your acupuncture benefits. We can provide you with a superbill (detailed receipt) that you can submit to your insurance for reimbursement.",
+      "Yes! We accept most major insurance plans for acupuncture treatments. Coverage varies by provider and plan, so we recommend contacting your insurance company to verify your specific acupuncture benefits. Our team can also help verify your coverage before your first visit. For plans we don't directly bill, we can provide you with a superbill (detailed receipt) that you can submit to your insurance for reimbursement.",
   },
   {
     question: "How should I prepare for an acupuncture session?",
