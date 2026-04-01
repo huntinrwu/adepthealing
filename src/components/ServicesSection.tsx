@@ -1,4 +1,6 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import acupunctureImg from "@/assets/acupuncture-treatment.jpg";
 import meditationImg from "@/assets/wellness-meditation.jpg";
 import digestiveImg from "@/assets/digestive-acupuncture-new.jpg";
