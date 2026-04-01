@@ -127,13 +127,16 @@ const Navbar = () => {
                   </a>
                 )
               )}
-              <Link
-                to="/contact"
-                onClick={() => setIsOpen(false)}
-                className="block text-center bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium"
-              >
-                Book Now
-              </Link>
+              <div className="flex items-center justify-between">
+                <ThemeToggle />
+                <Link
+                  to="/contact"
+                  onClick={() => setIsOpen(false)}
+                  className="block text-center bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium"
+                >
+                  Book Now
+                </Link>
+              </div>
             </div>
           </motion.div>
         )}
