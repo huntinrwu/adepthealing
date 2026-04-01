@@ -79,9 +79,9 @@ const ServicesSection = () => {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
               </div>
-              <div className="p-8">
-                <h3 className="heading-md text-foreground mb-3">{service.title}</h3>
-                <p className="body-md text-muted-foreground">{service.description}</p>
+              <div className="p-5 md:p-8">
+                <h3 className="heading-md text-foreground mb-2 md:mb-3">{service.title}</h3>
+                <p className="body-md text-muted-foreground text-sm md:text-base">{service.description}</p>
               </div>
             </motion.article>
           ))}
