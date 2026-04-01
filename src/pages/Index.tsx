@@ -72,19 +72,19 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>Adept Healing | Acupuncture in Herndon VA | Pain Relief & Holistic Wellness</title>
+        <title>Adept Healing | Acupuncture in Herndon & Fairfax County VA | Pain Relief & Wellness</title>
         <meta
           name="description"
-          content="Adept Healing offers expert acupuncture in Herndon, Virginia. Relieve chronic pain, reduce stress, support fertility, and restore balance with personalized acupuncture treatments. Serving Northern Virginia."
+          content="Adept Healing offers expert acupuncture in Herndon, Virginia — serving Fairfax County, Northern Virginia, and the DC metro area. Relieve chronic pain, reduce stress, and restore balance with over a decade of experience."
         />
         <meta
           name="keywords"
-          content="acupuncture Herndon VA, acupuncture Northern Virginia, acupuncture near me, pain relief acupuncture, stress relief acupuncture, fertility acupuncture, sports acupuncture, back pain acupuncture, migraine acupuncture, anxiety acupuncture, holistic healing, traditional Chinese medicine, TCM, acupuncture Reston, acupuncture Sterling, acupuncture Ashburn, acupuncture Fairfax, natural pain relief, insomnia acupuncture, sciatica treatment"
+          content="acupuncture Herndon VA, acupuncture Fairfax County, acupuncture Northern Virginia, acupuncture DC metro, acupuncture near me, pain relief acupuncture, back pain acupuncture, migraine acupuncture, sciatica treatment, neck pain acupuncture, stress relief acupuncture, anxiety acupuncture, sports acupuncture, knee pain acupuncture, shoulder pain acupuncture, acupuncture Reston VA, acupuncture Sterling VA, acupuncture Ashburn VA, acupuncture Fairfax VA, traditional Chinese medicine, licensed acupuncturist, natural pain relief"
         />
-        <meta property="og:title" content="Adept Healing | Acupuncture in Herndon VA" />
+        <meta property="og:title" content="Adept Healing | Acupuncture in Herndon & Fairfax County VA" />
         <meta
           property="og:description"
-          content="Expert acupuncture in Herndon, Virginia. Restore balance, relieve pain, and nurture your body's natural healing power."
+          content="Expert acupuncture in Herndon, Virginia. Over a decade of experience helping patients relieve pain, reduce stress, and heal naturally. Serving Fairfax County and the DC metro area."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://adepthealing.com" />
