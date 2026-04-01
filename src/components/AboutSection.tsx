@@ -43,8 +43,8 @@ const AboutSection = () => {
               Rooted in Tradition,<br /> Focused on You
             </h2>
             <p className="body-lg text-muted-foreground mb-6">
-              Licensed acupuncturists with years of clinical experience and a deep 
-              reverence for traditional Chinese medicine.
+              With over a decade of clinical experience and a deep reverence for 
+              traditional Chinese medicine, Max brings expert care to every session.
             </p>
             <p className="body-md text-muted-foreground mb-8">
               Whether you're managing chronic pain, stress, digestive issues, or sleep quality — 
