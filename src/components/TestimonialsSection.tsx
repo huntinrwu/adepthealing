@@ -40,8 +40,7 @@ const TestimonialsSection = () => {
             Real Healing, Real Results
           </h2>
           <p className="body-md text-muted-foreground max-w-xl mx-auto">
-            Hear from our patients who've experienced transformative relief through 
-            acupuncture and holistic care at Adept Healing.
+            Real results from our patients at Adept Healing.
           </p>
         </motion.div>
 

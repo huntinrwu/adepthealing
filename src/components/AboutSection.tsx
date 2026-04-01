@@ -43,15 +43,12 @@ const AboutSection = () => {
               Rooted in Tradition,<br /> Focused on You
             </h2>
             <p className="body-lg text-muted-foreground mb-6">
-              At Adept Healing, we believe true wellness is a journey of balance and harmony. 
-              Our licensed acupuncturists bring years of clinical experience and a deep reverence 
-              for traditional Chinese medicine to every session.
+              Licensed acupuncturists with years of clinical experience and a deep 
+              reverence for traditional Chinese medicine.
             </p>
             <p className="body-md text-muted-foreground mb-8">
-              Whether you're seeking relief from chronic pain, managing stress and anxiety, 
-              addressing digestive issues, or improving sleep quality, our personalized treatment 
-              plans are designed to restore your body's natural equilibrium and support 
-              long-term vitality.
+              Whether you're managing chronic pain, stress, digestive issues, or sleep quality — 
+              our personalized plans restore balance and support long-term vitality.
             </p>
             <a
               href="#contact"
