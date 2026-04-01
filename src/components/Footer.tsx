@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="bg-foreground text-primary-foreground">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-12 py-10 md:py-16">
-        <div className="grid md:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-12">
           {/* Brand */}
           <div>
             <h3 className="font-display text-2xl font-semibold mb-4">Adept Healing</h3>

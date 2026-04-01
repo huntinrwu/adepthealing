@@ -93,7 +93,7 @@ const ServicesSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mt-16 bg-primary/10 rounded-2xl p-10 text-center"
+          className="mt-12 md:mt-16 bg-primary/10 rounded-2xl p-6 md:p-10 text-center"
         >
           <h3 className="heading-md text-foreground mb-3">Not sure which treatment is right for you?</h3>
           <p className="body-md text-muted-foreground mb-6 max-w-xl mx-auto">

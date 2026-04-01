@@ -98,14 +98,14 @@ const Navbar = () => {
             exit={{ opacity: 0, height: 0 }}
             className="lg:hidden bg-background border-b border-border overflow-hidden"
           >
-            <div className="px-6 py-6 space-y-4">
+            <div className="px-4 py-4 space-y-1">
               {navLinks.map((link) =>
                 isInternal(link.href) ? (
                   <Link
                     key={link.label}
                     to={link.href}
                     onClick={() => setIsOpen(false)}
-                    className="block text-lg font-display text-foreground hover:text-primary transition-colors"
+                    className="block text-lg font-display text-foreground hover:text-primary transition-colors py-3 min-h-[44px]"
                   >
                     {link.label}
                   </Link>
@@ -121,7 +121,7 @@ const Navbar = () => {
                         setIsOpen(false);
                       }
                     }}
-                    className="block text-lg font-display text-foreground hover:text-primary transition-colors"
+                    className="block text-lg font-display text-foreground hover:text-primary transition-colors py-3 min-h-[44px]"
                   >
                     {link.label}
                   </a>

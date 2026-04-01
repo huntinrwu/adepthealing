@@ -56,7 +56,7 @@ const HeroSection = () => {
         >
           <Link
             to="/contact"
-            className="bg-primary text-primary-foreground px-8 py-4 rounded-full text-lg font-display font-medium hover:opacity-90 transition-all duration-300 shadow-lg"
+            className="bg-primary text-primary-foreground px-6 py-3.5 md:px-8 md:py-4 rounded-full text-base md:text-lg font-display font-medium hover:opacity-90 transition-all duration-300 shadow-lg min-h-[48px] flex items-center justify-center"
           >
             Schedule Your Healing
           </Link>
@@ -66,7 +66,7 @@ const HeroSection = () => {
               e.preventDefault();
               document.getElementById("services")?.scrollIntoView({ behavior: "smooth" });
             }}
-            className="border-2 border-primary-foreground/50 text-primary-foreground px-8 py-4 rounded-full text-lg font-display font-medium hover:bg-primary-foreground/10 transition-all duration-300"
+            className="border-2 border-primary-foreground/50 text-primary-foreground px-6 py-3.5 md:px-8 md:py-4 rounded-full text-base md:text-lg font-display font-medium hover:bg-primary-foreground/10 transition-all duration-300 min-h-[48px] flex items-center justify-center"
           >
             Explore Services
           </a>
