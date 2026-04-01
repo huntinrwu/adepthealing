@@ -24,7 +24,7 @@ const faqs = [
   {
     question: "What conditions can acupuncture treat?",
     answer:
-      "Acupuncture is effective for a wide range of conditions including chronic pain (back pain, neck pain, knee pain), migraines and headaches, stress and anxiety, insomnia, digestive disorders (IBS, acid reflux), allergies, fertility challenges, menstrual irregularities, menopausal symptoms, sports injuries, sciatica, carpal tunnel syndrome, TMJ, and post-surgical recovery. It's also excellent for general wellness and preventive care.",
+      "Acupuncture is effective for a wide range of conditions including chronic pain (back pain, neck pain, knee pain), migraines and headaches, stress and anxiety, insomnia, digestive disorders (IBS, acid reflux), allergies, sports injuries, sciatica, carpal tunnel syndrome, TMJ, and post-surgical recovery. It's also excellent for general wellness and preventive care.",
   },
   {
     question: "How many acupuncture sessions will I need?",
