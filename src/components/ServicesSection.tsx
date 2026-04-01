@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import acupunctureImg from "@/assets/acupuncture-treatment.jpg";
 import meditationImg from "@/assets/wellness-meditation.jpg";
+import digestiveImg from "@/assets/digestive-acupuncture.jpg";
+import sportsImg from "@/assets/sports-acupuncture.jpg";
 
 const services = [
   {
@@ -21,14 +23,14 @@ const services = [
     title: "Digestive & General Wellness",
     description:
       "Holistic acupuncture treatments supporting digestive health, immune function, allergy relief, and overall vitality. Restore your body's natural balance and promote long-term well-being.",
-    image: acupunctureImg,
+    image: digestiveImg,
     alt: "Acupuncture for digestive health general wellness and immune support in Northern Virginia",
   },
   {
     title: "Sports Injury & Recovery",
     description:
       "Accelerate healing from sports injuries, muscle strains, tendonitis, and post-surgical recovery. Acupuncture reduces inflammation, improves circulation, and restores mobility faster.",
-    image: meditationImg,
+    image: sportsImg,
     alt: "Sports acupuncture for injury recovery muscle strain and athletic performance",
   },
 ];
