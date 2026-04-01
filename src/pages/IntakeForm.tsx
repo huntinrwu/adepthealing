@@ -61,10 +61,32 @@ const IntakeForm = () => {
     );
   };
 
-  const onSubmit = (data: IntakeFormData) => {
-    console.log("Intake form submitted:", { ...data, conditions: selectedConditions });
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const onSubmit = async (data: IntakeFormData) => {
+    try {
+      const { error } = await supabase.from("intake_submissions").insert({
+        first_name: data.firstName,
+        last_name: data.lastName,
+        email: data.email,
+        phone: data.phone,
+        date_of_birth: data.dateOfBirth,
+        gender: data.gender,
+        address: data.address,
+        emergency_contact: data.emergencyContact,
+        emergency_phone: data.emergencyPhone,
+        primary_concern: data.primaryConcern,
+        conditions: selectedConditions,
+        medical_history: data.medicalHistory || null,
+        current_medications: data.currentMedications || null,
+        allergies: data.allergies || null,
+        previous_acupuncture: data.previousAcupuncture,
+        referral_source: data.referralSource || null,
+      });
+      if (error) throw error;
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      console.error("Error submitting intake form:", err);
+    }
   };
 
   if (submitted) {
