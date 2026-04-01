@@ -16,7 +16,7 @@ const testimonials = [
   },
   {
     name: "Maria C.",
-    text: "The herbal medicine program combined with acupuncture helped me manage my anxiety naturally. The team is warm, knowledgeable, and truly cares about your well-being.",
+    text: "Acupuncture combined with herbal medicine helped me manage my anxiety naturally. The team is warm and truly cares.",
     rating: 5,
     condition: "Anxiety & Stress",
   },
