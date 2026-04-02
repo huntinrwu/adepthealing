@@ -7,10 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 
 type ContactSubmission = {
   id: string;
+  display_id: number;
   name: string;
   email: string;
   phone: string | null;
@@ -23,6 +25,7 @@ type ContactSubmission = {
 
 type IntakeSubmission = {
   id: string;
+  display_id: number;
   first_name: string;
   last_name: string;
   email: string;
@@ -42,6 +45,7 @@ type IntakeSubmission = {
   status: string;
   notes: string | null;
   created_at: string;
+  linked_inquiry_id: string | null;
 };
 
 type AuditEntry = {
@@ -53,17 +57,14 @@ type AuditEntry = {
   details: Record<string, unknown> | null;
 };
 
-const STATUSES = ["new", "pending", "in_review", "contacted", "in_progress", "scheduled", "completed", "archived"] as const;
+const INQUIRY_STATUSES = ["new", "pending", "contacted", "scheduled"] as const;
+const PATIENT_STATUSES = ["new", "pending", "contacted", "scheduled"] as const;
 
 const statusConfig: Record<string, { label: string; color: string; dot: string }> = {
   new: { label: "New", color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300", dot: "bg-blue-500" },
   pending: { label: "Pending", color: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300", dot: "bg-amber-500" },
-  in_review: { label: "In Review", color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300", dot: "bg-purple-500" },
   contacted: { label: "Contacted", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300", dot: "bg-yellow-500" },
-  in_progress: { label: "In Progress", color: "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300", dot: "bg-sky-500" },
   scheduled: { label: "Scheduled", color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300", dot: "bg-green-500" },
-  completed: { label: "Completed", color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300", dot: "bg-emerald-500" },
-  archived: { label: "Archived", color: "bg-muted text-muted-foreground", dot: "bg-muted-foreground" },
 };
 
 const StatusBadge = ({ status }: { status: string }) => {
@@ -74,6 +75,12 @@ const StatusBadge = ({ status }: { status: string }) => {
       {cfg.label}
     </span>
   );
+};
+
+const buildGoogleCalendarUrl = (name: string, email: string, phone: string | null, concern: string) => {
+  const title = encodeURIComponent(`Adept Healing — ${name}`);
+  const details = encodeURIComponent(`Patient: ${name}\nEmail: ${email}${phone ? `\nPhone: ${phone}` : ""}\nConcern: ${concern}`);
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}`;
 };
 
 const AdminDashboard = () => {
@@ -101,8 +108,8 @@ const AdminDashboard = () => {
       supabase.from("intake_submissions").select("*").order("created_at", { ascending: false }),
       supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(200),
     ]);
-    if (contactRes.data) setContacts(contactRes.data);
-    if (intakeRes.data) setIntakes(intakeRes.data);
+    if (contactRes.data) setContacts(contactRes.data as unknown as ContactSubmission[]);
+    if (intakeRes.data) setIntakes(intakeRes.data as unknown as IntakeSubmission[]);
     if (auditRes.data) setAuditLog(auditRes.data as AuditEntry[]);
   };
 
@@ -129,7 +136,8 @@ const AdminDashboard = () => {
         c.name.toLowerCase().includes(q) ||
         c.email.toLowerCase().includes(q) ||
         c.message.toLowerCase().includes(q) ||
-        (c.phone && c.phone.includes(q))
+        (c.phone && c.phone.includes(q)) ||
+        String(c.display_id).includes(q)
       );
     }
     return list;
@@ -144,7 +152,8 @@ const AdminDashboard = () => {
         `${i.first_name} ${i.last_name}`.toLowerCase().includes(q) ||
         i.email.toLowerCase().includes(q) ||
         i.primary_concern.toLowerCase().includes(q) ||
-        i.phone.includes(q)
+        i.phone.includes(q) ||
+        String(i.display_id).includes(q)
       );
     }
     return list;
@@ -164,6 +173,36 @@ const AdminDashboard = () => {
     await logAction("status_change", "intake_submissions", id, { from: prev, to: status });
     fetchData();
     if (selectedIntake?.id === id) setSelectedIntake({ ...selectedIntake, status });
+  };
+
+  // Auto-mark as "pending" when a "new" record is opened
+  const openContact = async (c: ContactSubmission) => {
+    setSelectedContact(c);
+    setSelectedIntake(null);
+    setEditNotes(c.notes || "");
+    setConfirmDelete(null);
+    if (c.status === "new") {
+      await updateContactStatus(c.id, "pending");
+    }
+  };
+
+  const openIntake = async (i: IntakeSubmission) => {
+    setSelectedIntake(i);
+    setSelectedContact(null);
+    setEditNotes(i.notes || "");
+    setConfirmDelete(null);
+    if (i.status === "new") {
+      await updateIntakeStatus(i.id, "pending");
+    }
+  };
+
+  const linkInquiryToPatient = async (intakeId: string, inquiryId: string | null) => {
+    await supabase.from("intake_submissions").update({ linked_inquiry_id: inquiryId } as never).eq("id", intakeId);
+    await logAction("linked_inquiry", "intake_submissions", intakeId, { linked_inquiry_id: inquiryId });
+    fetchData();
+    if (selectedIntake?.id === intakeId) {
+      setSelectedIntake({ ...selectedIntake, linked_inquiry_id: inquiryId });
+    }
   };
 
   const saveNotes = async (type: "contact" | "intake", id: string) => {
@@ -213,7 +252,6 @@ const AdminDashboard = () => {
     if (newPassword !== confirmPassword) { setPasswordMsg({ type: "error", text: "Passwords do not match." }); return; }
     setChangingPassword(true);
     try {
-      // Verify current password by re-signing in
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) { setPasswordMsg({ type: "error", text: "Unable to verify identity." }); return; }
       const { error: signInError } = await supabase.auth.signInWithPassword({ email: user.email, password: currentPassword });
@@ -230,27 +268,32 @@ const AdminDashboard = () => {
 
   const countByStatus = (items: { status: string }[]) => {
     const counts: Record<string, number> = {};
-    STATUSES.forEach(s => counts[s] = 0);
+    INQUIRY_STATUSES.forEach(s => counts[s] = 0);
     items.forEach(i => { counts[i.status] = (counts[i.status] || 0) + 1; });
     return counts;
   };
 
   const contactCounts = countByStatus(contacts);
   const intakeCounts = countByStatus(intakes);
-  const actionNeeded = contactCounts.new + contactCounts.pending + intakeCounts.new + intakeCounts.pending;
-  const inProgress = contactCounts.in_review + contactCounts.contacted + contactCounts.in_progress +
-                     intakeCounts.in_review + intakeCounts.contacted + intakeCounts.in_progress;
+  const actionNeeded = contactCounts.new + intakeCounts.new;
+  const pending = contactCounts.pending + intakeCounts.pending;
 
   const actionLabels: Record<string, string> = {
     status_change: "Status Changed",
     notes_updated: "Notes Updated",
     deleted: "Record Deleted",
     password_changed: "Password Changed",
+    linked_inquiry: "Inquiry Linked",
   };
 
   const tableLabels: Record<string, string> = {
     contact_submissions: "Inquiry",
     intake_submissions: "Patient",
+  };
+
+  const getLinkedInquiry = (inquiryId: string | null) => {
+    if (!inquiryId) return null;
+    return contacts.find(c => c.id === inquiryId) || null;
   };
 
   const DeleteButton = ({ type, id, label }: { type: "contact" | "intake"; id: string; label: string }) => (
@@ -312,13 +355,12 @@ const AdminDashboard = () => {
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             {[
               { label: "Total", value: contacts.length + intakes.length, accent: false },
-              { label: "Action Needed", value: actionNeeded, accent: actionNeeded > 0 },
-              { label: "In Progress", value: inProgress, accent: false },
+              { label: "New", value: actionNeeded, accent: actionNeeded > 0 },
+              { label: "Pending", value: pending, accent: false },
               { label: "Scheduled", value: contactCounts.scheduled + intakeCounts.scheduled, accent: false },
-              { label: "Completed", value: contactCounts.completed + intakeCounts.completed, accent: false },
             ].map((stat) => (
               <div key={stat.label} className="bg-background rounded-lg p-4 shadow-sm">
                 <p className="text-xs text-muted-foreground">{stat.label}</p>
@@ -330,7 +372,7 @@ const AdminDashboard = () => {
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <Input
-              placeholder="Search by name, email, phone..."
+              placeholder="Search by name, email, phone, ID..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="sm:max-w-xs"
@@ -344,7 +386,7 @@ const AdminDashboard = () => {
               >
                 All
               </button>
-              {STATUSES.map(s => (
+              {INQUIRY_STATUSES.map(s => (
                 <button
                   key={s}
                   onClick={() => setStatusFilter(s)}
@@ -387,12 +429,15 @@ const AdminDashboard = () => {
                   filteredContacts.map(c => (
                     <div
                       key={c.id}
-                      onClick={() => { setSelectedContact(c); setSelectedIntake(null); setEditNotes(c.notes || ""); setConfirmDelete(null); }}
+                      onClick={() => openContact(c)}
                       className="bg-background rounded-lg p-4 shadow-sm cursor-pointer transition-all hover:shadow-md border-l-4 border-l-transparent hover:border-l-primary"
                     >
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <div className="min-w-0">
-                          <p className="font-medium text-foreground truncate">{c.name}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono text-muted-foreground">INQ-{c.display_id}</span>
+                            <p className="font-medium text-foreground truncate">{c.name}</p>
+                          </div>
                           <p className="text-xs text-muted-foreground">{c.email}{c.phone ? ` · ${c.phone}` : ""}</p>
                         </div>
                         <StatusBadge status={c.status} />
@@ -413,7 +458,10 @@ const AdminDashboard = () => {
                   {selectedContact && (
                     <>
                       <DialogHeader>
-                        <DialogTitle className="text-xl">{selectedContact.name}</DialogTitle>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">INQ-{selectedContact.display_id}</span>
+                          <DialogTitle className="text-xl">{selectedContact.name}</DialogTitle>
+                        </div>
                       </DialogHeader>
 
                       <div className="space-y-5 mt-2">
@@ -430,9 +478,9 @@ const AdminDashboard = () => {
                         </div>
 
                         <div>
-                          <p className="text-sm font-medium text-foreground mb-2">Status Pipeline</p>
+                          <p className="text-sm font-medium text-foreground mb-2">Status</p>
                           <div className="flex flex-wrap gap-1.5">
-                            {STATUSES.map(s => (
+                            {INQUIRY_STATUSES.map(s => (
                               <button
                                 key={s}
                                 onClick={() => updateContactStatus(selectedContact.id, s)}
@@ -446,6 +494,18 @@ const AdminDashboard = () => {
                               </button>
                             ))}
                           </div>
+                        </div>
+
+                        {/* Google Calendar */}
+                        <div>
+                          <a
+                            href={buildGoogleCalendarUrl(selectedContact.name, selectedContact.email, selectedContact.phone, selectedContact.interest)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm bg-primary text-primary-foreground px-4 py-2 rounded-full hover:opacity-90 transition-opacity"
+                          >
+                            📅 Schedule in Google Calendar
+                          </a>
                         </div>
 
                         <div>
@@ -486,15 +546,25 @@ const AdminDashboard = () => {
                   filteredIntakes.map(i => (
                     <div
                       key={i.id}
-                      onClick={() => { setSelectedIntake(i); setSelectedContact(null); setEditNotes(i.notes || ""); setConfirmDelete(null); }}
+                      onClick={() => openIntake(i)}
                       className="bg-background rounded-lg p-4 shadow-sm cursor-pointer transition-all hover:shadow-md border-l-4 border-l-transparent hover:border-l-primary"
                     >
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <div className="min-w-0">
-                          <p className="font-medium text-foreground truncate">{i.first_name} {i.last_name}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono text-muted-foreground">PAT-{i.display_id}</span>
+                            <p className="font-medium text-foreground truncate">{i.first_name} {i.last_name}</p>
+                          </div>
                           <p className="text-xs text-muted-foreground">{i.email} · {i.phone}</p>
                         </div>
-                        <StatusBadge status={i.status} />
+                        <div className="flex items-center gap-2">
+                          {i.linked_inquiry_id && (
+                            <span className="text-xs font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                              🔗 INQ-{contacts.find(c => c.id === i.linked_inquiry_id)?.display_id || "?"}
+                            </span>
+                          )}
+                          <StatusBadge status={i.status} />
+                        </div>
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{i.primary_concern}</p>
                       <div className="flex items-center justify-between mt-2">
@@ -512,7 +582,10 @@ const AdminDashboard = () => {
                   {selectedIntake && (
                     <>
                       <DialogHeader>
-                        <DialogTitle className="text-xl">{selectedIntake.first_name} {selectedIntake.last_name}</DialogTitle>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">PAT-{selectedIntake.display_id}</span>
+                          <DialogTitle className="text-xl">{selectedIntake.first_name} {selectedIntake.last_name}</DialogTitle>
+                        </div>
                       </DialogHeader>
 
                       <div className="space-y-5 mt-2">
@@ -573,10 +646,40 @@ const AdminDashboard = () => {
                           )}
                         </div>
 
+                        {/* Link Inquiry */}
                         <div className="border-t border-border pt-3">
-                          <p className="text-sm font-medium text-foreground mb-2">Status Pipeline</p>
+                          <p className="text-sm font-medium text-foreground mb-2">Link to Inquiry</p>
+                          {selectedIntake.linked_inquiry_id && getLinkedInquiry(selectedIntake.linked_inquiry_id) ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-primary font-mono">INQ-{getLinkedInquiry(selectedIntake.linked_inquiry_id)!.display_id}</span>
+                              <span className="text-sm text-muted-foreground">— {getLinkedInquiry(selectedIntake.linked_inquiry_id)!.name}</span>
+                              <button
+                                onClick={() => linkInquiryToPatient(selectedIntake.id, null)}
+                                className="text-xs text-destructive hover:text-destructive/80 ml-2"
+                              >
+                                Unlink
+                              </button>
+                            </div>
+                          ) : (
+                            <Select onValueChange={(val) => linkInquiryToPatient(selectedIntake.id, val)}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select an inquiry to link..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {contacts.map(c => (
+                                  <SelectItem key={c.id} value={c.id}>
+                                    INQ-{c.display_id} — {c.name} ({c.email})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
+
+                        <div className="border-t border-border pt-3">
+                          <p className="text-sm font-medium text-foreground mb-2">Status</p>
                           <div className="flex flex-wrap gap-1.5">
-                            {STATUSES.map(s => (
+                            {PATIENT_STATUSES.map(s => (
                               <button
                                 key={s}
                                 onClick={() => updateIntakeStatus(selectedIntake.id, s)}
@@ -590,6 +693,23 @@ const AdminDashboard = () => {
                               </button>
                             ))}
                           </div>
+                        </div>
+
+                        {/* Google Calendar */}
+                        <div>
+                          <a
+                            href={buildGoogleCalendarUrl(
+                              `${selectedIntake.first_name} ${selectedIntake.last_name}`,
+                              selectedIntake.email,
+                              selectedIntake.phone,
+                              selectedIntake.primary_concern
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm bg-primary text-primary-foreground px-4 py-2 rounded-full hover:opacity-90 transition-opacity"
+                          >
+                            📅 Schedule in Google Calendar
+                          </a>
                         </div>
 
                         <div className="border-t border-border pt-3">
