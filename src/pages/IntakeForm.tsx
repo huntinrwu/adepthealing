@@ -41,6 +41,7 @@ const conditions = [
 ];
 
 const IntakeForm = () => {
+  const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<IntakeFormData>({
