@@ -334,6 +334,8 @@ const AdminDashboard = () => {
     deleted: "Record Deleted",
     password_changed: "Password Changed",
     linked_inquiry: "Inquiry Linked",
+    visit_added: "Visit Added",
+    visit_deleted: "Visit Deleted",
   };
 
   const tableLabels: Record<string, string> = {
