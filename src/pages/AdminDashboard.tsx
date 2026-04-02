@@ -101,8 +101,11 @@ const AdminDashboard = () => {
   const [selectedIntake, setSelectedIntake] = useState<IntakeSubmission | null>(null);
   const [editNotes, setEditNotes] = useState("");
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [patientVisits, setPatientVisits] = useState<PatientVisit[]>([]);
+  const [selectedVisit, setSelectedVisit] = useState<PatientVisit | null>(null);
+  const [showAddVisit, setShowAddVisit] = useState(false);
+  const [visitForm, setVisitForm] = useState({ visit_date: new Date().toISOString().split("T")[0], chief_complaint: "", treatment_notes: "", follow_up_notes: "" });
+  const [savingVisit, setSavingVisit] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPassword, setCurrentPassword] = useState("");
