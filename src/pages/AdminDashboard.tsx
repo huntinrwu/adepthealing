@@ -671,6 +671,43 @@ const AdminDashboard = () => {
                 )}
               </div>
             </TabsContent>
+
+            {/* SETTINGS TAB */}
+            <TabsContent value="settings">
+              <div className="max-w-md">
+                <div className="bg-background rounded-lg shadow-sm p-6">
+                  <h2 className="text-lg font-semibold text-foreground mb-1">Change Password</h2>
+                  <p className="text-sm text-muted-foreground mb-5">Update your admin account password.</p>
+                  {passwordMsg && (
+                    <div className={`text-sm p-3 rounded-lg mb-4 ${passwordMsg.type === "success" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" : "bg-destructive/10 text-destructive"}`}>
+                      {passwordMsg.text}
+                    </div>
+                  )}
+                  <form onSubmit={handlePasswordChange} className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-foreground block mb-1">Current Password</label>
+                      <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground block mb-1">New Password</label>
+                      <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={8} />
+                      <p className="text-xs text-muted-foreground mt-1">Minimum 8 characters</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground block mb-1">Confirm New Password</label>
+                      <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={changingPassword}
+                      className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                    >
+                      {changingPassword ? "Updating..." : "Update Password"}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </TabsContent>
           </Tabs>
         </main>
       </div>
