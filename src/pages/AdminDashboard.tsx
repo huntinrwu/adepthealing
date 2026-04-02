@@ -483,6 +483,9 @@ const AdminDashboard = () => {
                 Patients
                 {intakeCounts.new > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0">{intakeCounts.new}</Badge>}
               </TabsTrigger>
+              <TabsTrigger value="lookup" className="gap-2">
+                🔍 Lookup
+              </TabsTrigger>
               <TabsTrigger value="calendar" className="gap-2">
                 📅 Calendar
               </TabsTrigger>
@@ -894,6 +897,126 @@ const AdminDashboard = () => {
                   )}
                 </DialogContent>
               </Dialog>
+            </TabsContent>
+
+            {/* LOOKUP TAB */}
+            <TabsContent value="lookup">
+              {(() => {
+                const [lookupQuery, setLookupQuery] = [search, setSearch];
+                const q = lookupQuery.trim().toLowerCase();
+
+                const matchedContacts = q ? contacts.filter(c =>
+                  c.name.toLowerCase().includes(q) ||
+                  c.email.toLowerCase().includes(q) ||
+                  (c.phone && c.phone.includes(q)) ||
+                  `inq-${c.display_id}`.includes(q) ||
+                  String(c.display_id) === q
+                ) : [];
+
+                const matchedIntakes = q ? intakes.filter(i =>
+                  `${i.first_name} ${i.last_name}`.toLowerCase().includes(q) ||
+                  i.email.toLowerCase().includes(q) ||
+                  i.phone.includes(q) ||
+                  `pat-${i.display_id}`.includes(q) ||
+                  String(i.display_id) === q
+                ) : [];
+
+                const totalResults = matchedContacts.length + matchedIntakes.length;
+
+                return (
+                  <div className="space-y-4">
+                    <div className="bg-background rounded-lg shadow-sm p-6">
+                      <h2 className="text-lg font-semibold text-foreground mb-1">Customer Lookup</h2>
+                      <p className="text-sm text-muted-foreground mb-4">Search by INQ-ID, PAT-ID, name, phone, or email.</p>
+                      <Input
+                        placeholder="e.g. INQ-5, PAT-12, John, 703-555-1234, john@email.com"
+                        value={lookupQuery}
+                        onChange={(e) => setLookupQuery(e.target.value)}
+                        className="text-base"
+                        autoFocus
+                      />
+                      {q && (
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {totalResults} result{totalResults !== 1 ? "s" : ""} found
+                        </p>
+                      )}
+                    </div>
+
+                    {q && matchedContacts.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2 px-1">Inquiries ({matchedContacts.length})</h3>
+                        <div className="space-y-2">
+                          {matchedContacts.map(c => (
+                            <div
+                              key={c.id}
+                              onClick={() => openContact(c)}
+                              className="bg-background rounded-lg p-4 shadow-sm cursor-pointer transition-all hover:shadow-md border-l-4 border-l-transparent hover:border-l-primary"
+                            >
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-mono text-muted-foreground">INQ-{c.display_id}</span>
+                                    <p className="font-medium text-foreground truncate">{c.name}</p>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">{c.email}{c.phone ? ` · ${c.phone}` : ""}</p>
+                                </div>
+                                <StatusBadge status={c.status} />
+                              </div>
+                              <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{c.message}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {q && matchedIntakes.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2 px-1">Patients ({matchedIntakes.length})</h3>
+                        <div className="space-y-2">
+                          {matchedIntakes.map(i => (
+                            <div
+                              key={i.id}
+                              onClick={() => openIntake(i)}
+                              className="bg-background rounded-lg p-4 shadow-sm cursor-pointer transition-all hover:shadow-md border-l-4 border-l-transparent hover:border-l-primary"
+                            >
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-mono text-muted-foreground">PAT-{i.display_id}</span>
+                                    <p className="font-medium text-foreground truncate">{i.first_name} {i.last_name}</p>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">{i.email} · {i.phone}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {i.linked_inquiry_id && (
+                                    <span className="text-xs font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                                      🔗 INQ-{contacts.find(c => c.id === i.linked_inquiry_id)?.display_id || "?"}
+                                    </span>
+                                  )}
+                                  <StatusBadge status={i.status} />
+                                </div>
+                              </div>
+                              <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{i.primary_concern}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {q && totalResults === 0 && (
+                      <div className="bg-background rounded-lg p-8 text-center text-muted-foreground text-sm">
+                        No inquiries or patients match "<strong>{q}</strong>".
+                      </div>
+                    )}
+
+                    {!q && (
+                      <div className="bg-background rounded-lg p-8 text-center text-muted-foreground text-sm">
+                        Start typing to search across all inquiries and patients.
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </TabsContent>
 
             {/* CALENDAR TAB */}
