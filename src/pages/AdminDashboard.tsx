@@ -642,7 +642,6 @@ const AdminDashboard = () => {
                               🔗 INQ-{contacts.find(c => c.id === i.linked_inquiry_id)?.display_id || "?"}
                             </span>
                           )}
-                          <StatusBadge status={i.status} />
                         </div>
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{i.primary_concern}</p>
