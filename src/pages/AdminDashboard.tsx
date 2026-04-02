@@ -87,6 +87,11 @@ const AdminDashboard = () => {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordMsg, setPasswordMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [changingPassword, setChangingPassword] = useState(false);
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -196,6 +201,28 @@ const AdminDashboard = () => {
     navigate("/admin/login");
   };
 
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordMsg(null);
+    if (newPassword.length < 8) { setPasswordMsg({ type: "error", text: "New password must be at least 8 characters." }); return; }
+    if (newPassword !== confirmPassword) { setPasswordMsg({ type: "error", text: "Passwords do not match." }); return; }
+    setChangingPassword(true);
+    try {
+      // Verify current password by re-signing in
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) { setPasswordMsg({ type: "error", text: "Unable to verify identity." }); return; }
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email: user.email, password: currentPassword });
+      if (signInError) { setPasswordMsg({ type: "error", text: "Current password is incorrect." }); setChangingPassword(false); return; }
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) { setPasswordMsg({ type: "error", text: error.message }); } else {
+        setPasswordMsg({ type: "success", text: "Password updated successfully." });
+        await logAction("password_changed", "auth", user.id, {});
+        setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+      }
+    } catch { setPasswordMsg({ type: "error", text: "An unexpected error occurred." }); }
+    finally { setChangingPassword(false); }
+  };
+
   const countByStatus = (items: { status: string }[]) => {
     const counts: Record<string, number> = {};
     STATUSES.forEach(s => counts[s] = 0);
@@ -213,6 +240,7 @@ const AdminDashboard = () => {
     status_change: "Status Changed",
     notes_updated: "Notes Updated",
     deleted: "Record Deleted",
+    password_changed: "Password Changed",
   };
 
   const tableLabels: Record<string, string> = {
@@ -337,6 +365,9 @@ const AdminDashboard = () => {
               </TabsTrigger>
               <TabsTrigger value="audit" className="gap-2">
                 Audit Log
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="gap-2">
+                Settings
               </TabsTrigger>
             </TabsList>
 
@@ -639,6 +670,43 @@ const AdminDashboard = () => {
                     );
                   })
                 )}
+              </div>
+            </TabsContent>
+
+            {/* SETTINGS TAB */}
+            <TabsContent value="settings">
+              <div className="max-w-md">
+                <div className="bg-background rounded-lg shadow-sm p-6">
+                  <h2 className="text-lg font-semibold text-foreground mb-1">Change Password</h2>
+                  <p className="text-sm text-muted-foreground mb-5">Update your admin account password.</p>
+                  {passwordMsg && (
+                    <div className={`text-sm p-3 rounded-lg mb-4 ${passwordMsg.type === "success" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" : "bg-destructive/10 text-destructive"}`}>
+                      {passwordMsg.text}
+                    </div>
+                  )}
+                  <form onSubmit={handlePasswordChange} className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-foreground block mb-1">Current Password</label>
+                      <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground block mb-1">New Password</label>
+                      <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={8} />
+                      <p className="text-xs text-muted-foreground mt-1">Minimum 8 characters</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground block mb-1">Confirm New Password</label>
+                      <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={changingPassword}
+                      className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                    >
+                      {changingPassword ? "Updating..." : "Update Password"}
+                    </button>
+                  </form>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
