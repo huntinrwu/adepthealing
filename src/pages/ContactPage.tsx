@@ -27,6 +27,8 @@ const ContactPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<ContactFormData>({ resolver: zodResolver(contactSchema) });
 
   const onSubmit = async (data: ContactFormData) => {
+    if (submitting) return;
+    setSubmitting(true);
     try {
       const { error } = await supabase.from("contact_submissions").insert({
         name: data.name, email: data.email, phone: data.phone || null, interest: data.interest, message: data.message,
@@ -36,6 +38,8 @@ const ContactPage = () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error("Error submitting contact form:", err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
