@@ -695,8 +695,8 @@ const AdminDashboard = () => {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-foreground block mb-1">New Password</label>
-                      <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={8} />
-                      <p className="text-xs text-muted-foreground mt-1">Minimum 8 characters</p>
+                      <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={12} />
+                      <p className="text-xs text-muted-foreground mt-1">Min 12 chars · uppercase · lowercase · number · symbol</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-foreground block mb-1">Confirm New Password</label>
