@@ -201,6 +201,28 @@ const AdminDashboard = () => {
     navigate("/admin/login");
   };
 
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordMsg(null);
+    if (newPassword.length < 8) { setPasswordMsg({ type: "error", text: "New password must be at least 8 characters." }); return; }
+    if (newPassword !== confirmPassword) { setPasswordMsg({ type: "error", text: "Passwords do not match." }); return; }
+    setChangingPassword(true);
+    try {
+      // Verify current password by re-signing in
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) { setPasswordMsg({ type: "error", text: "Unable to verify identity." }); return; }
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email: user.email, password: currentPassword });
+      if (signInError) { setPasswordMsg({ type: "error", text: "Current password is incorrect." }); setChangingPassword(false); return; }
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) { setPasswordMsg({ type: "error", text: error.message }); } else {
+        setPasswordMsg({ type: "success", text: "Password updated successfully." });
+        await logAction("password_changed", "auth", user.id, {});
+        setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+      }
+    } catch { setPasswordMsg({ type: "error", text: "An unexpected error occurred." }); }
+    finally { setChangingPassword(false); }
+  };
+
   const countByStatus = (items: { status: string }[]) => {
     const counts: Record<string, number> = {};
     STATUSES.forEach(s => counts[s] = 0);
