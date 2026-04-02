@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Anyone can submit intake form" ON public.intake_submissions;
