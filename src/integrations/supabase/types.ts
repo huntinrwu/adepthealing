@@ -47,6 +47,7 @@ export type Database = {
       contact_submissions: {
         Row: {
           created_at: string
+          display_id: number
           email: string
           id: string
           interest: string
@@ -59,6 +60,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          display_id?: number
           email: string
           id?: string
           interest: string
@@ -71,6 +73,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          display_id?: number
           email?: string
           id?: string
           interest?: string
@@ -91,6 +94,7 @@ export type Database = {
           created_at: string
           current_medications: string | null
           date_of_birth: string
+          display_id: number
           email: string
           emergency_contact: string
           emergency_phone: string
@@ -98,6 +102,7 @@ export type Database = {
           gender: string
           id: string
           last_name: string
+          linked_inquiry_id: string | null
           medical_history: string | null
           notes: string | null
           phone: string
@@ -114,6 +119,7 @@ export type Database = {
           created_at?: string
           current_medications?: string | null
           date_of_birth: string
+          display_id?: number
           email: string
           emergency_contact: string
           emergency_phone: string
@@ -121,6 +127,7 @@ export type Database = {
           gender: string
           id?: string
           last_name: string
+          linked_inquiry_id?: string | null
           medical_history?: string | null
           notes?: string | null
           phone: string
@@ -137,6 +144,7 @@ export type Database = {
           created_at?: string
           current_medications?: string | null
           date_of_birth?: string
+          display_id?: number
           email?: string
           emergency_contact?: string
           emergency_phone?: string
@@ -144,6 +152,7 @@ export type Database = {
           gender?: string
           id?: string
           last_name?: string
+          linked_inquiry_id?: string | null
           medical_history?: string | null
           notes?: string | null
           phone?: string
@@ -153,7 +162,15 @@ export type Database = {
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "intake_submissions_linked_inquiry_id_fkey"
+            columns: ["linked_inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "contact_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
