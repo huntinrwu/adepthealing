@@ -483,6 +483,9 @@ const AdminDashboard = () => {
                 Patients
                 {intakeCounts.new > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0">{intakeCounts.new}</Badge>}
               </TabsTrigger>
+              <TabsTrigger value="calendar" className="gap-2">
+                📅 Calendar
+              </TabsTrigger>
               <TabsTrigger value="audit" className="gap-2">
                 Audit Log
               </TabsTrigger>
