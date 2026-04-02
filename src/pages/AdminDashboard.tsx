@@ -115,16 +115,37 @@ const AdminDashboard = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMsg, setPasswordMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [allVisits, setAllVisits] = useState<(PatientVisit & { patient_name?: string })[]>([]);
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [calendarSelectedDay, setCalendarSelectedDay] = useState<Date | null>(null);
   const navigate = useNavigate();
 
+  const fetchAllVisits = async () => {
+    const { data: visits } = await supabase
+      .from("patient_visits")
+      .select("*")
+      .order("visit_date", { ascending: false });
+    return (visits as unknown as PatientVisit[]) || [];
+  };
+
   const fetchData = async () => {
-    const [contactRes, intakeRes, auditRes] = await Promise.all([
+    const [contactRes, intakeRes, auditRes, visits] = await Promise.all([
       supabase.from("contact_submissions").select("*").order("created_at", { ascending: false }),
       supabase.from("intake_submissions").select("*").order("created_at", { ascending: false }),
       supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(200),
+      fetchAllVisits(),
     ]);
     if (contactRes.data) setContacts(contactRes.data as unknown as ContactSubmission[]);
-    if (intakeRes.data) setIntakes(intakeRes.data as unknown as IntakeSubmission[]);
+    if (intakeRes.data) {
+      const intakeData = intakeRes.data as unknown as IntakeSubmission[];
+      setIntakes(intakeData);
+      // Enrich visits with patient names
+      const enriched = visits.map(v => {
+        const patient = intakeData.find(p => p.id === v.patient_id);
+        return { ...v, patient_name: patient ? `${patient.first_name} ${patient.last_name}` : "Unknown" };
+      });
+      setAllVisits(enriched);
+    }
     if (auditRes.data) setAuditLog(auditRes.data as AuditEntry[]);
   };
 
