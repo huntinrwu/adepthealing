@@ -42,6 +42,7 @@ const conditions = [
 
 const IntakeForm = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<IntakeFormData>({
     resolver: zodResolver(intakeSchema),
@@ -53,6 +54,8 @@ const IntakeForm = () => {
   };
 
   const onSubmit = async (data: IntakeFormData) => {
+    if (submitting) return;
+    setSubmitting(true);
     try {
       const { error } = await supabase.from("intake_submissions").insert({
         first_name: data.firstName, last_name: data.lastName, email: data.email, phone: data.phone,
@@ -67,6 +70,7 @@ const IntakeForm = () => {
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) { console.error("Error submitting intake form:", err); }
+    finally { setSubmitting(false); }
   };
 
   if (submitted) {
@@ -159,7 +163,7 @@ const IntakeForm = () => {
               </section>
 
               <div className="text-center">
-                <button type="submit" className="bg-primary text-primary-foreground px-12 py-4 rounded-full text-lg font-display font-medium hover:opacity-90 transition-opacity shadow-lg">Submit Intake Form</button>
+                <button type="submit" disabled={submitting} className="bg-primary text-primary-foreground px-12 py-4 rounded-full text-lg font-display font-medium hover:opacity-90 transition-opacity shadow-lg disabled:opacity-50">{submitting ? "Submitting..." : "Submit Intake Form"}</button>
               </div>
             </form>
           </div>

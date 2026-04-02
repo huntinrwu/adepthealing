@@ -152,14 +152,11 @@ const AdminDashboard = () => {
   useEffect(() => { fetchData(); }, []);
 
   const logAction = async (action: string, targetTable: string, targetId: string, details: Record<string, unknown> = {}) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    await supabase.from("audit_log").insert({
-      user_id: user.id,
-      action,
-      target_table: targetTable,
-      target_id: targetId,
-      details: details as Record<string, unknown>,
+    await supabase.rpc("create_audit_entry", {
+      _action: action,
+      _target_table: targetTable,
+      _target_id: targetId,
+      _details: details,
     } as never);
   };
 

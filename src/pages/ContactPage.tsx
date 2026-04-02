@@ -24,9 +24,12 @@ type ContactFormData = z.infer<typeof contactSchema>;
 
 const ContactPage = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm<ContactFormData>({ resolver: zodResolver(contactSchema) });
 
   const onSubmit = async (data: ContactFormData) => {
+    if (submitting) return;
+    setSubmitting(true);
     try {
       const { error } = await supabase.from("contact_submissions").insert({
         name: data.name, email: data.email, phone: data.phone || null, interest: data.interest, message: data.message,
@@ -36,6 +39,8 @@ const ContactPage = () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error("Error submitting contact form:", err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -111,7 +116,7 @@ const ContactPage = () => {
                 {errors.message && <p className="text-destructive text-sm mt-1">{errors.message.message}</p>}
               </div>
               <div className="text-center pt-2">
-                <button type="submit" className="bg-primary text-primary-foreground px-10 py-3 rounded-full text-lg font-display font-medium hover:opacity-90 transition-opacity shadow-lg">Send Message</button>
+                <button type="submit" disabled={submitting} className="bg-primary text-primary-foreground px-10 py-3 rounded-full text-lg font-display font-medium hover:opacity-90 transition-opacity shadow-lg disabled:opacity-50">{submitting ? "Sending..." : "Send Message"}</button>
               </div>
             </form>
 
