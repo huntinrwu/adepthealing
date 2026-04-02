@@ -642,7 +642,6 @@ const AdminDashboard = () => {
                               🔗 INQ-{contacts.find(c => c.id === i.linked_inquiry_id)?.display_id || "?"}
                             </span>
                           )}
-                          <StatusBadge status={i.status} />
                         </div>
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{i.primary_concern}</p>
@@ -755,24 +754,6 @@ const AdminDashboard = () => {
                           )}
                         </div>
 
-                        <div className="border-t border-border pt-3">
-                          <p className="text-sm font-medium text-foreground mb-2">Status</p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {PATIENT_STATUSES.map(s => (
-                              <button
-                                key={s}
-                                onClick={() => updateIntakeStatus(selectedIntake.id, s)}
-                                className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
-                                  selectedIntake.status === s
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                                }`}
-                              >
-                                {statusConfig[s]?.label || s}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
 
                         {/* Google Calendar */}
                         <div>
