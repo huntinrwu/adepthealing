@@ -204,7 +204,11 @@ const AdminDashboard = () => {
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordMsg(null);
-    if (newPassword.length < 8) { setPasswordMsg({ type: "error", text: "New password must be at least 8 characters." }); return; }
+    if (newPassword.length < 12) { setPasswordMsg({ type: "error", text: "Password must be at least 12 characters." }); return; }
+    if (!/[A-Z]/.test(newPassword)) { setPasswordMsg({ type: "error", text: "Password must include an uppercase letter." }); return; }
+    if (!/[a-z]/.test(newPassword)) { setPasswordMsg({ type: "error", text: "Password must include a lowercase letter." }); return; }
+    if (!/[0-9]/.test(newPassword)) { setPasswordMsg({ type: "error", text: "Password must include a number." }); return; }
+    if (!/[^A-Za-z0-9]/.test(newPassword)) { setPasswordMsg({ type: "error", text: "Password must include a symbol (e.g. !@#$%)." }); return; }
     if (newPassword !== confirmPassword) { setPasswordMsg({ type: "error", text: "Passwords do not match." }); return; }
     setChangingPassword(true);
     try {
