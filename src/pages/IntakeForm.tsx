@@ -162,7 +162,7 @@ const IntakeForm = () => {
               </section>
 
               <div className="text-center">
-                <button type="submit" className="bg-primary text-primary-foreground px-12 py-4 rounded-full text-lg font-display font-medium hover:opacity-90 transition-opacity shadow-lg">Submit Intake Form</button>
+                <button type="submit" disabled={submitting} className="bg-primary text-primary-foreground px-12 py-4 rounded-full text-lg font-display font-medium hover:opacity-90 transition-opacity shadow-lg disabled:opacity-50">{submitting ? "Submitting..." : "Submit Intake Form"}</button>
               </div>
             </form>
           </div>

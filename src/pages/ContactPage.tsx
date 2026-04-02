@@ -115,7 +115,7 @@ const ContactPage = () => {
                 {errors.message && <p className="text-destructive text-sm mt-1">{errors.message.message}</p>}
               </div>
               <div className="text-center pt-2">
-                <button type="submit" className="bg-primary text-primary-foreground px-10 py-3 rounded-full text-lg font-display font-medium hover:opacity-90 transition-opacity shadow-lg">Send Message</button>
+                <button type="submit" disabled={submitting} className="bg-primary text-primary-foreground px-10 py-3 rounded-full text-lg font-display font-medium hover:opacity-90 transition-opacity shadow-lg disabled:opacity-50">{submitting ? "Sending..." : "Send Message"}</button>
               </div>
             </form>
 
