@@ -762,8 +762,89 @@ const AdminDashboard = () => {
                           </a>
                         </div>
 
+                        {/* Visit History */}
                         <div className="border-t border-border pt-3">
-                          <p className="text-sm font-medium text-foreground mb-1">Internal Notes</p>
+                          <div className="flex items-center justify-between mb-3">
+                            <p className="text-sm font-medium text-foreground">Visit History ({patientVisits.length})</p>
+                            <button
+                              onClick={() => { setShowAddVisit(!showAddVisit); setSelectedVisit(null); }}
+                              className="text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-full hover:opacity-90 transition-opacity"
+                            >
+                              {showAddVisit ? "Cancel" : "+ Add Visit"}
+                            </button>
+                          </div>
+
+                          {showAddVisit && (
+                            <div className="bg-muted/50 rounded-lg p-4 mb-3 space-y-3">
+                              <div>
+                                <label className="text-xs font-medium text-foreground block mb-1">Visit Date</label>
+                                <Input type="date" value={visitForm.visit_date} onChange={e => setVisitForm({ ...visitForm, visit_date: e.target.value })} />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-foreground block mb-1">Chief Complaint</label>
+                                <textarea value={visitForm.chief_complaint} onChange={e => setVisitForm({ ...visitForm, chief_complaint: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="What brought the patient in today..." />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-foreground block mb-1">Treatment Notes</label>
+                                <textarea value={visitForm.treatment_notes} onChange={e => setVisitForm({ ...visitForm, treatment_notes: e.target.value })} className="w-full h-20 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Points used, techniques, observations..." />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-foreground block mb-1">Follow-up Notes</label>
+                                <textarea value={visitForm.follow_up_notes} onChange={e => setVisitForm({ ...visitForm, follow_up_notes: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Recommendations, next visit plan..." />
+                              </div>
+                              <button onClick={() => addVisit(selectedIntake.id)} disabled={savingVisit} className="text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50">
+                                {savingVisit ? "Saving..." : "Save Visit"}
+                              </button>
+                            </div>
+                          )}
+
+                          {selectedVisit ? (
+                            <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-medium text-foreground">{format(new Date(selectedVisit.visit_date + "T00:00:00"), "MMMM d, yyyy")}</p>
+                                <button onClick={() => setSelectedVisit(null)} className="text-xs text-muted-foreground hover:text-foreground">← Back to list</button>
+                              </div>
+                              {selectedVisit.chief_complaint && (
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Chief Complaint</p>
+                                  <p className="text-sm text-foreground">{selectedVisit.chief_complaint}</p>
+                                </div>
+                              )}
+                              {selectedVisit.treatment_notes && (
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Treatment Notes</p>
+                                  <p className="text-sm text-foreground whitespace-pre-wrap">{selectedVisit.treatment_notes}</p>
+                                </div>
+                              )}
+                              {selectedVisit.follow_up_notes && (
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Follow-up</p>
+                                  <p className="text-sm text-foreground">{selectedVisit.follow_up_notes}</p>
+                                </div>
+                              )}
+                              <button onClick={() => deleteVisit(selectedVisit.id, selectedIntake.id)} className="text-xs text-destructive hover:text-destructive/80">🗑 Delete Visit</button>
+                            </div>
+                          ) : (
+                            patientVisits.length === 0 ? (
+                              <p className="text-sm text-muted-foreground">No visits recorded yet.</p>
+                            ) : (
+                              <div className="space-y-1.5">
+                                {patientVisits.map(v => (
+                                  <div
+                                    key={v.id}
+                                    onClick={() => { setSelectedVisit(v); setShowAddVisit(false); }}
+                                    className="flex items-center justify-between bg-background rounded-lg p-3 cursor-pointer hover:bg-muted/50 transition-colors border border-border"
+                                  >
+                                    <div>
+                                      <p className="text-sm font-medium text-foreground">{format(new Date(v.visit_date + "T00:00:00"), "MMM d, yyyy")}</p>
+                                      {v.chief_complaint && <p className="text-xs text-muted-foreground line-clamp-1">{v.chief_complaint}</p>}
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">→</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )
+                          )}
                           <textarea
                             value={editNotes}
                             onChange={(e) => setEditNotes(e.target.value)}
