@@ -240,6 +240,7 @@ const AdminDashboard = () => {
     status_change: "Status Changed",
     notes_updated: "Notes Updated",
     deleted: "Record Deleted",
+    password_changed: "Password Changed",
   };
 
   const tableLabels: Record<string, string> = {
