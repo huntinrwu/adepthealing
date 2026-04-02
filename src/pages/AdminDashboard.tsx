@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isToday } from "date-fns";
 
 type ContactSubmission = {
   id: string;
@@ -115,16 +115,37 @@ const AdminDashboard = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMsg, setPasswordMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [allVisits, setAllVisits] = useState<(PatientVisit & { patient_name?: string })[]>([]);
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [calendarSelectedDay, setCalendarSelectedDay] = useState<Date | null>(null);
   const navigate = useNavigate();
 
+  const fetchAllVisits = async () => {
+    const { data: visits } = await supabase
+      .from("patient_visits")
+      .select("*")
+      .order("visit_date", { ascending: false });
+    return (visits as unknown as PatientVisit[]) || [];
+  };
+
   const fetchData = async () => {
-    const [contactRes, intakeRes, auditRes] = await Promise.all([
+    const [contactRes, intakeRes, auditRes, visits] = await Promise.all([
       supabase.from("contact_submissions").select("*").order("created_at", { ascending: false }),
       supabase.from("intake_submissions").select("*").order("created_at", { ascending: false }),
       supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(200),
+      fetchAllVisits(),
     ]);
     if (contactRes.data) setContacts(contactRes.data as unknown as ContactSubmission[]);
-    if (intakeRes.data) setIntakes(intakeRes.data as unknown as IntakeSubmission[]);
+    if (intakeRes.data) {
+      const intakeData = intakeRes.data as unknown as IntakeSubmission[];
+      setIntakes(intakeData);
+      // Enrich visits with patient names
+      const enriched = visits.map(v => {
+        const patient = intakeData.find(p => p.id === v.patient_id);
+        return { ...v, patient_name: patient ? `${patient.first_name} ${patient.last_name}` : "Unknown" };
+      });
+      setAllVisits(enriched);
+    }
     if (auditRes.data) setAuditLog(auditRes.data as AuditEntry[]);
   };
 
@@ -461,6 +482,9 @@ const AdminDashboard = () => {
               <TabsTrigger value="intakes" className="gap-2">
                 Patients
                 {intakeCounts.new > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0">{intakeCounts.new}</Badge>}
+              </TabsTrigger>
+              <TabsTrigger value="calendar" className="gap-2">
+                📅 Calendar
               </TabsTrigger>
               <TabsTrigger value="audit" className="gap-2">
                 Audit Log
@@ -870,6 +894,125 @@ const AdminDashboard = () => {
                   )}
                 </DialogContent>
               </Dialog>
+            </TabsContent>
+
+            {/* CALENDAR TAB */}
+            <TabsContent value="calendar">
+              <div className="bg-background rounded-lg shadow-sm p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <button
+                    onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
+                    className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-full hover:bg-muted transition-colors"
+                  >
+                    ← Prev
+                  </button>
+                  <h2 className="text-lg font-semibold text-foreground">
+                    {format(calendarMonth, "MMMM yyyy")}
+                  </h2>
+                  <button
+                    onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
+                    className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-full hover:bg-muted transition-colors"
+                  >
+                    Next →
+                  </button>
+                </div>
+
+                {/* Day headers */}
+                <div className="grid grid-cols-7 text-center text-xs font-medium text-muted-foreground mb-2">
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => (
+                    <div key={d} className="py-2">{d}</div>
+                  ))}
+                </div>
+
+                {/* Calendar grid */}
+                {(() => {
+                  const monthStart = startOfMonth(calendarMonth);
+                  const monthEnd = endOfMonth(calendarMonth);
+                  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+                  const startPad = getDay(monthStart);
+
+                  return (
+                    <div className="grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden">
+                      {/* Padding for days before month starts */}
+                      {Array.from({ length: startPad }).map((_, i) => (
+                        <div key={`pad-${i}`} className="bg-muted/30 min-h-[80px] sm:min-h-[100px]" />
+                      ))}
+                      {days.map(day => {
+                        const dateStr = format(day, "yyyy-MM-dd");
+                        const dayVisits = allVisits.filter(v => v.visit_date === dateStr);
+                        const isSelected = calendarSelectedDay && isSameDay(day, calendarSelectedDay);
+
+                        return (
+                          <div
+                            key={dateStr}
+                            onClick={() => setCalendarSelectedDay(isSelected ? null : day)}
+                            className={`bg-background min-h-[80px] sm:min-h-[100px] p-1.5 cursor-pointer transition-colors hover:bg-muted/50 ${
+                              isSelected ? "ring-2 ring-primary ring-inset" : ""
+                            }`}
+                          >
+                            <span className={`text-xs font-medium inline-flex items-center justify-center w-6 h-6 rounded-full ${
+                              isToday(day) ? "bg-primary text-primary-foreground" : "text-foreground"
+                            }`}>
+                              {format(day, "d")}
+                            </span>
+                            {dayVisits.length > 0 && (
+                              <div className="mt-1 space-y-0.5">
+                                {dayVisits.slice(0, 3).map(v => (
+                                  <div key={v.id} className="text-[10px] leading-tight bg-primary/10 text-primary rounded px-1 py-0.5 truncate">
+                                    {v.patient_name}
+                                  </div>
+                                ))}
+                                {dayVisits.length > 3 && (
+                                  <div className="text-[10px] text-muted-foreground">+{dayVisits.length - 3} more</div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+
+                {/* Selected day detail */}
+                {calendarSelectedDay && (() => {
+                  const dateStr = format(calendarSelectedDay, "yyyy-MM-dd");
+                  const dayVisits = allVisits.filter(v => v.visit_date === dateStr);
+                  return (
+                    <div className="mt-6">
+                      <h3 className="text-sm font-semibold text-foreground mb-3">
+                        {format(calendarSelectedDay, "EEEE, MMMM d, yyyy")} — {dayVisits.length} visit{dayVisits.length !== 1 ? "s" : ""}
+                      </h3>
+                      {dayVisits.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">No visits scheduled for this day.</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {dayVisits.map(v => {
+                            const patient = intakes.find(p => p.id === v.patient_id);
+                            return (
+                              <div
+                                key={v.id}
+                                className="bg-muted/50 rounded-lg p-4 border border-border cursor-pointer hover:bg-muted transition-colors"
+                                onClick={() => patient && openIntake(patient)}
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="flex items-center gap-2">
+                                    {patient && <span className="text-xs font-mono text-muted-foreground">PAT-{patient.display_id}</span>}
+                                    <p className="text-sm font-medium text-foreground">{v.patient_name}</p>
+                                  </div>
+                                  <span className="text-xs text-primary">View patient →</span>
+                                </div>
+                                {v.chief_complaint && <p className="text-xs text-muted-foreground line-clamp-1">{v.chief_complaint}</p>}
+                                {v.treatment_notes && <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">Treatment: {v.treatment_notes}</p>}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
             </TabsContent>
 
             {/* AUDIT LOG TAB */}
