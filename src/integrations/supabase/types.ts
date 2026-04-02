@@ -172,6 +172,47 @@ export type Database = {
           },
         ]
       }
+      patient_visits: {
+        Row: {
+          chief_complaint: string | null
+          created_at: string
+          follow_up_notes: string | null
+          id: string
+          patient_id: string
+          treatment_notes: string | null
+          updated_at: string
+          visit_date: string
+        }
+        Insert: {
+          chief_complaint?: string | null
+          created_at?: string
+          follow_up_notes?: string | null
+          id?: string
+          patient_id: string
+          treatment_notes?: string | null
+          updated_at?: string
+          visit_date?: string
+        }
+        Update: {
+          chief_complaint?: string | null
+          created_at?: string
+          follow_up_notes?: string | null
+          id?: string
+          patient_id?: string
+          treatment_notes?: string | null
+          updated_at?: string
+          visit_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_visits_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "intake_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string

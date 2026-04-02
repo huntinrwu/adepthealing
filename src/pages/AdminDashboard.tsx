@@ -48,6 +48,16 @@ type IntakeSubmission = {
   linked_inquiry_id: string | null;
 };
 
+type PatientVisit = {
+  id: string;
+  patient_id: string;
+  visit_date: string;
+  chief_complaint: string | null;
+  treatment_notes: string | null;
+  follow_up_notes: string | null;
+  created_at: string;
+};
+
 type AuditEntry = {
   id: string;
   created_at: string;
@@ -93,6 +103,11 @@ const AdminDashboard = () => {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [patientVisits, setPatientVisits] = useState<PatientVisit[]>([]);
+  const [selectedVisit, setSelectedVisit] = useState<PatientVisit | null>(null);
+  const [showAddVisit, setShowAddVisit] = useState(false);
+  const [visitForm, setVisitForm] = useState({ visit_date: new Date().toISOString().split("T")[0], chief_complaint: "", treatment_notes: "", follow_up_notes: "" });
+  const [savingVisit, setSavingVisit] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -186,14 +201,49 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchVisits = async (patientId: string) => {
+    const { data } = await supabase
+      .from("patient_visits")
+      .select("*")
+      .eq("patient_id", patientId)
+      .order("visit_date", { ascending: false });
+    setPatientVisits((data as unknown as PatientVisit[]) || []);
+  };
+
   const openIntake = async (i: IntakeSubmission) => {
     setSelectedIntake(i);
     setSelectedContact(null);
     setEditNotes(i.notes || "");
     setConfirmDelete(null);
+    setSelectedVisit(null);
+    setShowAddVisit(false);
+    fetchVisits(i.id);
     if (i.status === "new") {
       await updateIntakeStatus(i.id, "pending");
     }
+  };
+
+  const addVisit = async (patientId: string) => {
+    setSavingVisit(true);
+    await supabase.from("patient_visits").insert({
+      patient_id: patientId,
+      visit_date: visitForm.visit_date,
+      chief_complaint: visitForm.chief_complaint || null,
+      treatment_notes: visitForm.treatment_notes || null,
+      follow_up_notes: visitForm.follow_up_notes || null,
+    } as never);
+    await logAction("visit_added", "patient_visits", patientId, { visit_date: visitForm.visit_date });
+    setVisitForm({ visit_date: new Date().toISOString().split("T")[0], chief_complaint: "", treatment_notes: "", follow_up_notes: "" });
+    setShowAddVisit(false);
+    setSavingVisit(false);
+    fetchVisits(patientId);
+  };
+
+  const deleteVisit = async (visitId: string, patientId: string) => {
+    await supabase.from("patient_visits").delete().eq("id", visitId);
+    await logAction("visit_deleted", "patient_visits", patientId, { visit_id: visitId });
+    setSelectedVisit(null);
+    fetchVisits(patientId);
   };
 
   const linkInquiryToPatient = async (intakeId: string, inquiryId: string | null) => {
@@ -284,6 +334,8 @@ const AdminDashboard = () => {
     deleted: "Record Deleted",
     password_changed: "Password Changed",
     linked_inquiry: "Inquiry Linked",
+    visit_added: "Visit Added",
+    visit_deleted: "Visit Deleted",
   };
 
   const tableLabels: Record<string, string> = {
@@ -712,8 +764,89 @@ const AdminDashboard = () => {
                           </a>
                         </div>
 
+                        {/* Visit History */}
                         <div className="border-t border-border pt-3">
-                          <p className="text-sm font-medium text-foreground mb-1">Internal Notes</p>
+                          <div className="flex items-center justify-between mb-3">
+                            <p className="text-sm font-medium text-foreground">Visit History ({patientVisits.length})</p>
+                            <button
+                              onClick={() => { setShowAddVisit(!showAddVisit); setSelectedVisit(null); }}
+                              className="text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-full hover:opacity-90 transition-opacity"
+                            >
+                              {showAddVisit ? "Cancel" : "+ Add Visit"}
+                            </button>
+                          </div>
+
+                          {showAddVisit && (
+                            <div className="bg-muted/50 rounded-lg p-4 mb-3 space-y-3">
+                              <div>
+                                <label className="text-xs font-medium text-foreground block mb-1">Visit Date</label>
+                                <Input type="date" value={visitForm.visit_date} onChange={e => setVisitForm({ ...visitForm, visit_date: e.target.value })} />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-foreground block mb-1">Chief Complaint</label>
+                                <textarea value={visitForm.chief_complaint} onChange={e => setVisitForm({ ...visitForm, chief_complaint: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="What brought the patient in today..." />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-foreground block mb-1">Treatment Notes</label>
+                                <textarea value={visitForm.treatment_notes} onChange={e => setVisitForm({ ...visitForm, treatment_notes: e.target.value })} className="w-full h-20 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Points used, techniques, observations..." />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-foreground block mb-1">Follow-up Notes</label>
+                                <textarea value={visitForm.follow_up_notes} onChange={e => setVisitForm({ ...visitForm, follow_up_notes: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Recommendations, next visit plan..." />
+                              </div>
+                              <button onClick={() => addVisit(selectedIntake.id)} disabled={savingVisit} className="text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50">
+                                {savingVisit ? "Saving..." : "Save Visit"}
+                              </button>
+                            </div>
+                          )}
+
+                          {selectedVisit ? (
+                            <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-medium text-foreground">{format(new Date(selectedVisit.visit_date + "T00:00:00"), "MMMM d, yyyy")}</p>
+                                <button onClick={() => setSelectedVisit(null)} className="text-xs text-muted-foreground hover:text-foreground">← Back to list</button>
+                              </div>
+                              {selectedVisit.chief_complaint && (
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Chief Complaint</p>
+                                  <p className="text-sm text-foreground">{selectedVisit.chief_complaint}</p>
+                                </div>
+                              )}
+                              {selectedVisit.treatment_notes && (
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Treatment Notes</p>
+                                  <p className="text-sm text-foreground whitespace-pre-wrap">{selectedVisit.treatment_notes}</p>
+                                </div>
+                              )}
+                              {selectedVisit.follow_up_notes && (
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Follow-up</p>
+                                  <p className="text-sm text-foreground">{selectedVisit.follow_up_notes}</p>
+                                </div>
+                              )}
+                              <button onClick={() => deleteVisit(selectedVisit.id, selectedIntake.id)} className="text-xs text-destructive hover:text-destructive/80">🗑 Delete Visit</button>
+                            </div>
+                          ) : (
+                            patientVisits.length === 0 ? (
+                              <p className="text-sm text-muted-foreground">No visits recorded yet.</p>
+                            ) : (
+                              <div className="space-y-1.5">
+                                {patientVisits.map(v => (
+                                  <div
+                                    key={v.id}
+                                    onClick={() => { setSelectedVisit(v); setShowAddVisit(false); }}
+                                    className="flex items-center justify-between bg-background rounded-lg p-3 cursor-pointer hover:bg-muted/50 transition-colors border border-border"
+                                  >
+                                    <div>
+                                      <p className="text-sm font-medium text-foreground">{format(new Date(v.visit_date + "T00:00:00"), "MMM d, yyyy")}</p>
+                                      {v.chief_complaint && <p className="text-xs text-muted-foreground line-clamp-1">{v.chief_complaint}</p>}
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">→</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )
+                          )}
                           <textarea
                             value={editNotes}
                             onChange={(e) => setEditNotes(e.target.value)}
