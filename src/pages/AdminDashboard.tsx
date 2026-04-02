@@ -101,6 +101,8 @@ const AdminDashboard = () => {
   const [selectedIntake, setSelectedIntake] = useState<IntakeSubmission | null>(null);
   const [editNotes, setEditNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [patientVisits, setPatientVisits] = useState<PatientVisit[]>([]);
   const [selectedVisit, setSelectedVisit] = useState<PatientVisit | null>(null);
   const [showAddVisit, setShowAddVisit] = useState(false);
