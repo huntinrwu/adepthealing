@@ -48,6 +48,16 @@ type IntakeSubmission = {
   linked_inquiry_id: string | null;
 };
 
+type PatientVisit = {
+  id: string;
+  patient_id: string;
+  visit_date: string;
+  chief_complaint: string | null;
+  treatment_notes: string | null;
+  follow_up_notes: string | null;
+  created_at: string;
+};
+
 type AuditEntry = {
   id: string;
   created_at: string;
