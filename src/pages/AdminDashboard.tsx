@@ -477,154 +477,146 @@ const AdminDashboard = () => {
 
             {/* INTAKES TAB */}
             <TabsContent value="intakes">
-              <div className="grid lg:grid-cols-3 gap-4">
-                <div className="lg:col-span-2 space-y-2">
-                  {filteredIntakes.length === 0 ? (
-                    <div className="bg-background rounded-lg p-8 text-center text-muted-foreground text-sm">
-                      {search || statusFilter !== "all" ? "No results match your filters." : "No intake forms yet."}
+              <div className="space-y-2">
+                {filteredIntakes.length === 0 ? (
+                  <div className="bg-background rounded-lg p-8 text-center text-muted-foreground text-sm">
+                    {search || statusFilter !== "all" ? "No results match your filters." : "No intake forms yet."}
+                  </div>
+                ) : (
+                  filteredIntakes.map(i => (
+                    <div
+                      key={i.id}
+                      onClick={() => { setSelectedIntake(i); setSelectedContact(null); setEditNotes(i.notes || ""); setConfirmDelete(null); }}
+                      className="bg-background rounded-lg p-4 shadow-sm cursor-pointer transition-all hover:shadow-md border-l-4 border-l-transparent hover:border-l-primary"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground truncate">{i.first_name} {i.last_name}</p>
+                          <p className="text-xs text-muted-foreground">{i.email} · {i.phone}</p>
+                        </div>
+                        <StatusBadge status={i.status} />
+                      </div>
+                      <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{i.primary_concern}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-xs text-muted-foreground">{format(new Date(i.created_at), "MMM d, yyyy h:mm a")}</p>
+                        {i.notes && <span className="text-xs text-muted-foreground">📝 Has notes</span>}
+                      </div>
                     </div>
-                  ) : (
-                    filteredIntakes.map(i => (
-                      <div
-                        key={i.id}
-                        onClick={() => { setSelectedIntake(i); setSelectedContact(null); setEditNotes(i.notes || ""); setConfirmDelete(null); }}
-                        className={`bg-background rounded-lg p-4 shadow-sm cursor-pointer transition-all hover:shadow-md border-l-4 ${
-                          selectedIntake?.id === i.id ? "ring-2 ring-primary border-l-primary" : "border-l-transparent"
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <div className="min-w-0">
-                            <p className="font-medium text-foreground truncate">{i.first_name} {i.last_name}</p>
-                            <p className="text-xs text-muted-foreground">{i.email} · {i.phone}</p>
+                  ))
+                )}
+              </div>
+
+              {/* Intake Detail Dialog */}
+              <Dialog open={!!selectedIntake} onOpenChange={(open) => { if (!open) setSelectedIntake(null); }}>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  {selectedIntake && (
+                    <>
+                      <DialogHeader>
+                        <DialogTitle className="text-xl">{selectedIntake.first_name} {selectedIntake.last_name}</DialogTitle>
+                      </DialogHeader>
+
+                      <div className="space-y-5 mt-2">
+                        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                          <p><span className="text-muted-foreground">Email:</span> <a href={`mailto:${selectedIntake.email}`} className="text-primary hover:underline">{selectedIntake.email}</a></p>
+                          <p><span className="text-muted-foreground">Phone:</span> <a href={`tel:${selectedIntake.phone}`} className="text-primary hover:underline">{selectedIntake.phone}</a></p>
+                          <p><span className="text-muted-foreground">DOB:</span> {selectedIntake.date_of_birth}</p>
+                          <p><span className="text-muted-foreground">Gender:</span> <span className="capitalize">{selectedIntake.gender}</span></p>
+                          <p className="sm:col-span-2"><span className="text-muted-foreground">Address:</span> {selectedIntake.address}</p>
+                        </div>
+
+                        <div className="border-t border-border pt-3">
+                          <p className="text-sm font-medium text-foreground mb-1">Emergency Contact</p>
+                          <p className="text-sm text-muted-foreground">{selectedIntake.emergency_contact} — <a href={`tel:${selectedIntake.emergency_phone}`} className="text-primary hover:underline">{selectedIntake.emergency_phone}</a></p>
+                        </div>
+
+                        <div className="border-t border-border pt-3">
+                          <p className="text-sm font-medium text-foreground mb-1">Primary Concern</p>
+                          <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">{selectedIntake.primary_concern}</p>
+                        </div>
+
+                        {selectedIntake.conditions && selectedIntake.conditions.length > 0 && (
+                          <div>
+                            <p className="text-sm font-medium text-foreground mb-1.5">Conditions</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {selectedIntake.conditions.map(c => (
+                                <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>
+                              ))}
+                            </div>
                           </div>
-                          <StatusBadge status={i.status} />
+                        )}
+
+                        {selectedIntake.medical_history && (
+                          <div>
+                            <p className="text-sm font-medium text-foreground mb-1">Medical History</p>
+                            <p className="text-sm text-muted-foreground">{selectedIntake.medical_history}</p>
+                          </div>
+                        )}
+
+                        {selectedIntake.current_medications && (
+                          <div>
+                            <p className="text-sm font-medium text-foreground mb-1">Medications</p>
+                            <p className="text-sm text-muted-foreground">{selectedIntake.current_medications}</p>
+                          </div>
+                        )}
+
+                        {selectedIntake.allergies && (
+                          <div>
+                            <p className="text-sm font-medium text-foreground mb-1">Allergies</p>
+                            <p className="text-sm text-muted-foreground">{selectedIntake.allergies}</p>
+                          </div>
+                        )}
+
+                        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                          <p><span className="text-muted-foreground">Previous Acupuncture:</span> {selectedIntake.previous_acupuncture}</p>
+                          {selectedIntake.referral_source && (
+                            <p><span className="text-muted-foreground">Referral:</span> {selectedIntake.referral_source}</p>
+                          )}
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{i.primary_concern}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <p className="text-xs text-muted-foreground">{format(new Date(i.created_at), "MMM d, yyyy h:mm a")}</p>
-                          {i.notes && <span className="text-xs text-muted-foreground">📝 Has notes</span>}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
 
-                {/* Detail Panel */}
-                <div>
-                  {selectedIntake ? (
-                    <div className="bg-background rounded-lg p-5 shadow-sm sticky top-4 space-y-4 max-h-[85vh] overflow-y-auto">
-                      <div className="flex items-start justify-between">
-                        <h3 className="text-lg font-semibold text-foreground">{selectedIntake.first_name} {selectedIntake.last_name}</h3>
-                        <button onClick={() => setSelectedIntake(null)} className="text-muted-foreground hover:text-foreground text-sm">✕</button>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                        <p><span className="text-muted-foreground">Email:</span></p>
-                        <a href={`mailto:${selectedIntake.email}`} className="text-primary hover:underline truncate">{selectedIntake.email}</a>
-                        <p><span className="text-muted-foreground">Phone:</span></p>
-                        <a href={`tel:${selectedIntake.phone}`} className="text-primary hover:underline">{selectedIntake.phone}</a>
-                        <p><span className="text-muted-foreground">DOB:</span></p>
-                        <p>{selectedIntake.date_of_birth}</p>
-                        <p><span className="text-muted-foreground">Gender:</span></p>
-                        <p className="capitalize">{selectedIntake.gender}</p>
-                        <p><span className="text-muted-foreground">Address:</span></p>
-                        <p>{selectedIntake.address}</p>
-                      </div>
-
-                      <div className="border-t border-border pt-3">
-                        <p className="text-sm font-medium text-foreground mb-1">Emergency Contact</p>
-                        <p className="text-sm text-muted-foreground">{selectedIntake.emergency_contact} — <a href={`tel:${selectedIntake.emergency_phone}`} className="text-primary hover:underline">{selectedIntake.emergency_phone}</a></p>
-                      </div>
-
-                      <div className="border-t border-border pt-3">
-                        <p className="text-sm font-medium text-foreground mb-1">Primary Concern</p>
-                        <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">{selectedIntake.primary_concern}</p>
-                      </div>
-
-                      {selectedIntake.conditions && selectedIntake.conditions.length > 0 && (
-                        <div>
-                          <p className="text-sm font-medium text-foreground mb-1.5">Conditions</p>
+                        <div className="border-t border-border pt-3">
+                          <p className="text-sm font-medium text-foreground mb-2">Status Pipeline</p>
                           <div className="flex flex-wrap gap-1.5">
-                            {selectedIntake.conditions.map(c => (
-                              <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>
+                            {STATUSES.map(s => (
+                              <button
+                                key={s}
+                                onClick={() => updateIntakeStatus(selectedIntake.id, s)}
+                                className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+                                  selectedIntake.status === s
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                }`}
+                              >
+                                {statusConfig[s]?.label || s}
+                              </button>
                             ))}
                           </div>
                         </div>
-                      )}
 
-                      {selectedIntake.medical_history && (
-                        <div>
-                          <p className="text-sm font-medium text-foreground mb-1">Medical History</p>
-                          <p className="text-sm text-muted-foreground">{selectedIntake.medical_history}</p>
+                        <div className="border-t border-border pt-3">
+                          <p className="text-sm font-medium text-foreground mb-1">Internal Notes</p>
+                          <textarea
+                            value={editNotes}
+                            onChange={(e) => setEditNotes(e.target.value)}
+                            className="w-full h-28 text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                            placeholder="Add notes about this patient..."
+                          />
+                          <button
+                            onClick={() => saveNotes("intake", selectedIntake.id)}
+                            disabled={saving}
+                            className="mt-2 text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
+                          >
+                            {saving ? "Saving..." : "Save Notes"}
+                          </button>
                         </div>
-                      )}
 
-                      {selectedIntake.current_medications && (
-                        <div>
-                          <p className="text-sm font-medium text-foreground mb-1">Medications</p>
-                          <p className="text-sm text-muted-foreground">{selectedIntake.current_medications}</p>
-                        </div>
-                      )}
-
-                      {selectedIntake.allergies && (
-                        <div>
-                          <p className="text-sm font-medium text-foreground mb-1">Allergies</p>
-                          <p className="text-sm text-muted-foreground">{selectedIntake.allergies}</p>
-                        </div>
-                      )}
-
-                      <p className="text-sm"><span className="text-muted-foreground">Previous Acupuncture:</span> {selectedIntake.previous_acupuncture}</p>
-                      {selectedIntake.referral_source && (
-                        <p className="text-sm"><span className="text-muted-foreground">Referral:</span> {selectedIntake.referral_source}</p>
-                      )}
-
-                      <div className="border-t border-border pt-3">
-                        <p className="text-sm font-medium text-foreground mb-2">Status Pipeline</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {STATUSES.map(s => (
-                            <button
-                              key={s}
-                              onClick={() => updateIntakeStatus(selectedIntake.id, s)}
-                              className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
-                                selectedIntake.status === s
-                                  ? "bg-primary text-primary-foreground"
-                                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-                              }`}
-                            >
-                              {statusConfig[s]?.label || s}
-                            </button>
-                          ))}
+                        <div className="border-t border-border pt-3">
+                          <DeleteButton type="intake" id={selectedIntake.id} label={`${selectedIntake.first_name} ${selectedIntake.last_name}`} />
                         </div>
                       </div>
-
-                      <div className="border-t border-border pt-3">
-                        <p className="text-sm font-medium text-foreground mb-1">Internal Notes</p>
-                        <textarea
-                          value={editNotes}
-                          onChange={(e) => setEditNotes(e.target.value)}
-                          className="w-full h-28 text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                          placeholder="Add notes about this patient..."
-                        />
-                        <button
-                          onClick={() => saveNotes("intake", selectedIntake.id)}
-                          disabled={saving}
-                          className="mt-2 text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
-                        >
-                          {saving ? "Saving..." : "Save Notes"}
-                        </button>
-                      </div>
-
-                      <div className="border-t border-border pt-3">
-                        <DeleteButton type="intake" id={selectedIntake.id} label={`${selectedIntake.first_name} ${selectedIntake.last_name}`} />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-background rounded-lg p-6 text-center text-muted-foreground text-sm">
-                      Select a patient to view details
-                    </div>
+                    </>
                   )}
-                </div>
-              </div>
+                </DialogContent>
+              </Dialog>
             </TabsContent>
 
             {/* AUDIT LOG TAB */}
