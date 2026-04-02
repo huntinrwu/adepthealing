@@ -365,6 +365,9 @@ const AdminDashboard = () => {
               <TabsTrigger value="audit" className="gap-2">
                 Audit Log
               </TabsTrigger>
+              <TabsTrigger value="settings" className="gap-2">
+                Settings
+              </TabsTrigger>
             </TabsList>
 
             {/* CONTACTS TAB */}
