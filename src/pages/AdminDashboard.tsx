@@ -201,14 +201,49 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchVisits = async (patientId: string) => {
+    const { data } = await supabase
+      .from("patient_visits")
+      .select("*")
+      .eq("patient_id", patientId)
+      .order("visit_date", { ascending: false });
+    setPatientVisits((data as unknown as PatientVisit[]) || []);
+  };
+
   const openIntake = async (i: IntakeSubmission) => {
     setSelectedIntake(i);
     setSelectedContact(null);
     setEditNotes(i.notes || "");
     setConfirmDelete(null);
+    setSelectedVisit(null);
+    setShowAddVisit(false);
+    fetchVisits(i.id);
     if (i.status === "new") {
       await updateIntakeStatus(i.id, "pending");
     }
+  };
+
+  const addVisit = async (patientId: string) => {
+    setSavingVisit(true);
+    await supabase.from("patient_visits").insert({
+      patient_id: patientId,
+      visit_date: visitForm.visit_date,
+      chief_complaint: visitForm.chief_complaint || null,
+      treatment_notes: visitForm.treatment_notes || null,
+      follow_up_notes: visitForm.follow_up_notes || null,
+    } as never);
+    await logAction("visit_added", "patient_visits", patientId, { visit_date: visitForm.visit_date });
+    setVisitForm({ visit_date: new Date().toISOString().split("T")[0], chief_complaint: "", treatment_notes: "", follow_up_notes: "" });
+    setShowAddVisit(false);
+    setSavingVisit(false);
+    fetchVisits(patientId);
+  };
+
+  const deleteVisit = async (visitId: string, patientId: string) => {
+    await supabase.from("patient_visits").delete().eq("id", visitId);
+    await logAction("visit_deleted", "patient_visits", patientId, { visit_id: visitId });
+    setSelectedVisit(null);
+    fetchVisits(patientId);
   };
 
   const linkInquiryToPatient = async (intakeId: string, inquiryId: string | null) => {
