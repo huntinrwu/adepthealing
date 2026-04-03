@@ -54,7 +54,7 @@ const FairfaxCountyAcupuncture = () => {
             <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">Serving Fairfax County &amp; Northern Virginia</p>
             <h1 className="heading-xl text-foreground mb-6">Acupuncture in Fairfax County, Virginia</h1>
             <p className="body-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-              Adept Healing provides expert acupuncture from our Herndon clinic, conveniently located for patients throughout Fairfax County. With over a decade of clinical experience, Max delivers personalized treatments that address the root cause — not just the symptoms.
+              Adept Healing provides expert acupuncture from our Herndon clinic, conveniently located for patients throughout Fairfax County. With over a decade of clinical experience, we deliver personalized treatments that address the root cause — not just the symptoms.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/contact" className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-full text-lg font-display font-medium hover:opacity-90 transition-opacity">
