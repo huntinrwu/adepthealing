@@ -84,7 +84,7 @@ const Footer = () => {
             &copy; {new Date().getFullYear()} Adept Healing. All rights reserved.
           </p>
           <p className="text-xs text-primary-foreground/40">
-            Acupuncture &bull; Herndon, VA &bull; Holistic Wellness
+            Acupuncture &bull; Herndon, VA
           </p>
         </div>
       </div>
