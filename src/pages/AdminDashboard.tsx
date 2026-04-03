@@ -110,7 +110,7 @@ const AdminDashboard = () => {
   const [patientVisits, setPatientVisits] = useState<PatientVisit[]>([]);
   const [selectedVisit, setSelectedVisit] = useState<PatientVisit | null>(null);
   const [showAddVisit, setShowAddVisit] = useState(false);
-  const [visitForm, setVisitForm] = useState({ visit_date: new Date().toISOString().split("T")[0], chief_complaint: "", treatment_notes: "", follow_up_notes: "" });
+  const [visitForm, setVisitForm] = useState({ visit_date: new Date().toISOString().split("T")[0], visit_status: "completed", chief_complaint: "", treatment_notes: "", follow_up_notes: "", symptoms: "", prescriptions: "", results: "" });
   const [savingVisit, setSavingVisit] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
