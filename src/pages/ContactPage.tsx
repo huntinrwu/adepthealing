@@ -18,6 +18,7 @@ const contactSchema = z.object({
   phone: z.string().trim().max(20).optional(),
   interest: z.string().min(1, "Please select a service"),
   message: z.string().trim().min(1, "Please tell us how we can help").max(2000),
+  website: z.string().max(0).optional(), // honeypot
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
