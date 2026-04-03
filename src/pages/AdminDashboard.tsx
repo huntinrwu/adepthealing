@@ -52,9 +52,13 @@ type PatientVisit = {
   id: string;
   patient_id: string;
   visit_date: string;
+  visit_status: string;
   chief_complaint: string | null;
   treatment_notes: string | null;
   follow_up_notes: string | null;
+  symptoms: string | null;
+  prescriptions: string | null;
+  results: string | null;
   created_at: string;
 };
 
