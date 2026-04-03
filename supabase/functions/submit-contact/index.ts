@@ -3,12 +3,15 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import { corsHeaders } from "jsr:@supabase/supabase-js@2/cors";
 import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 
+const MAX_SUBMISSIONS_PER_HOUR = 3;
+
 const contactSchema = z.object({
   name: z.string().trim().min(1).max(100),
   email: z.string().trim().email().max(255),
   phone: z.string().trim().max(20).optional().nullable(),
   interest: z.string().min(1).max(100),
   message: z.string().trim().min(1).max(2000),
+  website: z.string().max(0, "Bot detected").optional(), // honeypot
 });
 
 Deno.serve(async (req) => {
@@ -27,10 +30,45 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Reject if honeypot filled
+    if (parsed.data.website) {
+      // Silently accept to not tip off bots
+      return new Response(
+        JSON.stringify({ success: true, id: "ok" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    // Get client IP for rate limiting
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("cf-connecting-ip") || "unknown";
+
+    // Check rate limit
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { count } = await supabase
+      .from("submission_rate_limits")
+      .select("*", { count: "exact", head: true })
+      .eq("ip_address", ip)
+      .eq("form_type", "contact")
+      .gte("submitted_at", oneHourAgo);
+
+    if ((count ?? 0) >= MAX_SUBMISSIONS_PER_HOUR) {
+      return new Response(
+        JSON.stringify({ error: "Too many submissions. Please try again later." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Record this submission for rate limiting
+    await supabase.from("submission_rate_limits").insert({
+      ip_address: ip,
+      form_type: "contact",
+    });
 
     const { data, error } = await supabase.from("contact_submissions").insert({
       name: parsed.data.name,
