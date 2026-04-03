@@ -9,7 +9,7 @@ const Footer = () => {
           <div>
             <h3 className="font-display text-2xl font-semibold mb-4">Adept Healing</h3>
             <p className="text-primary-foreground/70 text-sm leading-relaxed">
-              Expert acupuncture and holistic wellness services in Herndon, Virginia. 
+              Expert acupuncture services in Herndon, Virginia. 
               Restoring balance and vitality through compassionate, evidence-informed 
               acupuncture care.
             </p>
