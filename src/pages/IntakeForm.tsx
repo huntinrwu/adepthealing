@@ -66,6 +66,7 @@ const IntakeForm = () => {
           medical_history: data.medicalHistory || null, current_medications: data.currentMedications || null,
           allergies: data.allergies || null, previous_acupuncture: data.previousAcupuncture,
           referral_source: data.referralSource || null,
+          website: "",
         },
       });
       if (error) throw error;
