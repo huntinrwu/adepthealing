@@ -4,7 +4,7 @@ import { useInView } from "@/hooks/useInView";
 
 const testimonials = [
   { name: "Sarah M.", text: "Max helped me overcome years of chronic back pain. His treatments were gentle yet incredibly effective.", rating: 5, condition: "Chronic Pain Relief" },
-  { name: "James L.", text: "I was skeptical at first, but Max's holistic approach changed everything. My migraines reduced dramatically.", rating: 5, condition: "Migraine & Sleep" },
+  { name: "James L.", text: "I was skeptical at first, but Max's acupuncture treatments changed everything. My migraines reduced dramatically.", rating: 5, condition: "Migraine & Sleep" },
   { name: "Maria C.", text: "Acupuncture helped me manage my anxiety naturally. Max is warm, skilled, and truly cares about your wellbeing.", rating: 5, condition: "Anxiety & Stress" },
 ];
 
