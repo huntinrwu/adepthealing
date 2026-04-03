@@ -938,7 +938,6 @@ const AdminDashboard = () => {
                                 ))}
                               </div>
                             )
-                          )
                           )}
                           <textarea
                             value={editNotes}
