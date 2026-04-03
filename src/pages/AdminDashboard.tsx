@@ -791,22 +791,68 @@ const AdminDashboard = () => {
 
                           {showAddVisit && (
                             <div className="bg-muted/50 rounded-lg p-4 mb-3 space-y-3">
-                              <div>
-                                <label className="text-xs font-medium text-foreground block mb-1">Visit Date</label>
-                                <Input type="date" value={visitForm.visit_date} onChange={e => setVisitForm({ ...visitForm, visit_date: e.target.value })} />
+                              <div className="grid sm:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-xs font-medium text-foreground block mb-1">Visit Date</label>
+                                  <Input type="date" value={visitForm.visit_date} onChange={e => setVisitForm({ ...visitForm, visit_date: e.target.value })} />
+                                </div>
+                                <div>
+                                  <label className="text-xs font-medium text-foreground block mb-1">Status</label>
+                                  <div className="flex gap-1.5">
+                                    {[
+                                      { value: "completed", label: "✅ Completed", activeClass: "bg-green-600 text-white" },
+                                      { value: "no-show", label: "❌ No-Show", activeClass: "bg-red-600 text-white" },
+                                      { value: "cancelled", label: "🚫 Cancelled", activeClass: "bg-amber-600 text-white" },
+                                    ].map(s => (
+                                      <button
+                                        key={s.value}
+                                        type="button"
+                                        onClick={() => setVisitForm({ ...visitForm, visit_status: s.value })}
+                                        className={`text-xs px-2.5 py-1.5 rounded-full border transition-all ${visitForm.visit_status === s.value ? s.activeClass + " border-transparent" : "border-input bg-background text-muted-foreground hover:bg-muted"}`}
+                                      >
+                                        {s.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <label className="text-xs font-medium text-foreground block mb-1">Chief Complaint</label>
-                                <textarea value={visitForm.chief_complaint} onChange={e => setVisitForm({ ...visitForm, chief_complaint: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="What brought the patient in today..." />
-                              </div>
-                              <div>
-                                <label className="text-xs font-medium text-foreground block mb-1">Treatment Notes</label>
-                                <textarea value={visitForm.treatment_notes} onChange={e => setVisitForm({ ...visitForm, treatment_notes: e.target.value })} className="w-full h-20 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Points used, techniques, observations..." />
-                              </div>
-                              <div>
-                                <label className="text-xs font-medium text-foreground block mb-1">Follow-up Notes</label>
-                                <textarea value={visitForm.follow_up_notes} onChange={e => setVisitForm({ ...visitForm, follow_up_notes: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Recommendations, next visit plan..." />
-                              </div>
+
+                              {visitForm.visit_status === "completed" && (
+                                <>
+                                  <div>
+                                    <label className="text-xs font-medium text-foreground block mb-1">Chief Complaint</label>
+                                    <textarea value={visitForm.chief_complaint} onChange={e => setVisitForm({ ...visitForm, chief_complaint: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="What brought the patient in today..." />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-foreground block mb-1">Symptoms Treated</label>
+                                    <textarea value={visitForm.symptoms} onChange={e => setVisitForm({ ...visitForm, symptoms: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="e.g. lower back pain, insomnia, anxiety..." />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-foreground block mb-1">Treatment Notes</label>
+                                    <textarea value={visitForm.treatment_notes} onChange={e => setVisitForm({ ...visitForm, treatment_notes: e.target.value })} className="w-full h-20 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Points used, techniques, observations..." />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-foreground block mb-1">Prescriptions / Herbs</label>
+                                    <textarea value={visitForm.prescriptions} onChange={e => setVisitForm({ ...visitForm, prescriptions: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Herbal formulas, supplements, lifestyle recommendations..." />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-foreground block mb-1">Results / Response</label>
+                                    <textarea value={visitForm.results} onChange={e => setVisitForm({ ...visitForm, results: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Patient response to treatment, improvements noted..." />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-foreground block mb-1">Follow-up Notes</label>
+                                    <textarea value={visitForm.follow_up_notes} onChange={e => setVisitForm({ ...visitForm, follow_up_notes: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Recommendations, next visit plan..." />
+                                  </div>
+                                </>
+                              )}
+
+                              {visitForm.visit_status !== "completed" && (
+                                <div>
+                                  <label className="text-xs font-medium text-foreground block mb-1">Notes (optional)</label>
+                                  <textarea value={visitForm.follow_up_notes} onChange={e => setVisitForm({ ...visitForm, follow_up_notes: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Any notes about this no-show or cancellation..." />
+                                </div>
+                              )}
+
                               <button onClick={() => addVisit(selectedIntake.id)} disabled={savingVisit} className="text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50">
                                 {savingVisit ? "Saving..." : "Save Visit"}
                               </button>
