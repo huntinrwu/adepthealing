@@ -18,12 +18,14 @@ const Navbar = () => {
 
   const handleNavClick = (href: string) => {
     setIsOpen(false);
+    // Only allow internal hash navigation — prevent open redirects
     if (href.startsWith("/#")) {
       const id = href.replace("/#", "");
+      if (!/^[a-zA-Z0-9_-]+$/.test(id)) return;
       if (location.pathname === "/") {
         document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
       } else {
-        window.location.href = href;
+        window.location.href = `/#${id}`;
       }
     }
   };

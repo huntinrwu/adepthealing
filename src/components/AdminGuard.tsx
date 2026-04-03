@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -6,30 +6,37 @@ interface AdminGuardProps {
   children: React.ReactNode;
 }
 
+const SESSION_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour inactivity timeout
+
 const AdminGuard = ({ children }: AdminGuardProps) => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
+  const signOutAndRedirect = useCallback(async () => {
+    await supabase.auth.signOut();
+    navigate("/admin/login");
+  }, [navigate]);
+
   useEffect(() => {
     const checkAdmin = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Use getUser() which verifies the JWT server-side, not just getSession()
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-      if (!session) {
+      if (userError || !user) {
         navigate("/admin/login");
         return;
       }
 
-      const { data: roleData } = await supabase
+      const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", session.user.id)
+        .eq("user_id", user.id)
         .eq("role", "admin")
         .maybeSingle();
 
-      if (!roleData) {
-        await supabase.auth.signOut();
-        navigate("/admin/login");
+      if (roleError || !roleData) {
+        await signOutAndRedirect();
         return;
       }
 
@@ -45,8 +52,25 @@ const AdminGuard = ({ children }: AdminGuardProps) => {
 
     checkAdmin();
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    // Session inactivity timeout
+    let inactivityTimer: ReturnType<typeof setTimeout>;
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        signOutAndRedirect();
+      }, SESSION_TIMEOUT_MS);
+    };
+
+    const events = ["mousedown", "keydown", "scroll", "touchstart"];
+    events.forEach((e) => window.addEventListener(e, resetTimer));
+    resetTimer();
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(inactivityTimer);
+      events.forEach((e) => window.removeEventListener(e, resetTimer));
+    };
+  }, [navigate, signOutAndRedirect]);
 
   if (loading) {
     return (

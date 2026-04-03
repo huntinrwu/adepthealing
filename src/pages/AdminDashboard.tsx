@@ -71,6 +71,19 @@ type AuditEntry = {
   details: Record<string, unknown> | null;
 };
 
+// PII masking helpers — mask sensitive data in list views, show full in detail dialogs
+const maskEmail = (email: string) => {
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  return `${local[0]}${"*".repeat(Math.max(local.length - 2, 1))}${local.length > 1 ? local[local.length - 1] : ""}@${domain}`;
+};
+
+const maskPhone = (phone: string) => {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length < 4) return "***";
+  return `***-***-${digits.slice(-4)}`;
+};
+
 const INQUIRY_STATUSES = ["new", "pending", "contacted", "scheduled"] as const;
 const PATIENT_STATUSES = ["new", "pending", "contacted", "scheduled"] as const;
 
@@ -522,7 +535,7 @@ const AdminDashboard = () => {
                             <span className="text-xs font-mono text-muted-foreground">INQ-{c.display_id}</span>
                             <p className="font-medium text-foreground truncate">{c.name}</p>
                           </div>
-                          <p className="text-xs text-muted-foreground">{c.email}{c.phone ? ` · ${c.phone}` : ""}</p>
+                          <p className="text-xs text-muted-foreground">{maskEmail(c.email)}{c.phone ? ` · ${maskPhone(c.phone)}` : ""}</p>
                         </div>
                         <StatusBadge status={c.status} />
                       </div>
@@ -639,7 +652,7 @@ const AdminDashboard = () => {
                             <span className="text-xs font-mono text-muted-foreground">PAT-{i.display_id}</span>
                             <p className="font-medium text-foreground truncate">{i.first_name} {i.last_name}</p>
                           </div>
-                          <p className="text-xs text-muted-foreground">{i.email} · {i.phone}</p>
+                          <p className="text-xs text-muted-foreground">{maskEmail(i.email)} · {maskPhone(i.phone)}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           {i.linked_inquiry_id && (
@@ -1023,7 +1036,7 @@ const AdminDashboard = () => {
                                     <span className="text-xs font-mono text-muted-foreground">INQ-{c.display_id}</span>
                                     <p className="font-medium text-foreground truncate">{c.name}</p>
                                   </div>
-                                  <p className="text-xs text-muted-foreground">{c.email}{c.phone ? ` · ${c.phone}` : ""}</p>
+                                  <p className="text-xs text-muted-foreground">{maskEmail(c.email)}{c.phone ? ` · ${maskPhone(c.phone)}` : ""}</p>
                                 </div>
                                 <StatusBadge status={c.status} />
                               </div>
@@ -1050,7 +1063,7 @@ const AdminDashboard = () => {
                                     <span className="text-xs font-mono text-muted-foreground">PAT-{i.display_id}</span>
                                     <p className="font-medium text-foreground truncate">{i.first_name} {i.last_name}</p>
                                   </div>
-                                  <p className="text-xs text-muted-foreground">{i.email} · {i.phone}</p>
+                                  <p className="text-xs text-muted-foreground">{maskEmail(i.email)} · {maskPhone(i.phone)}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   {i.linked_inquiry_id && (
