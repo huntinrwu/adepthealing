@@ -18,6 +18,7 @@ const contactSchema = z.object({
   phone: z.string().trim().max(20).optional(),
   interest: z.string().min(1, "Please select a service"),
   message: z.string().trim().min(1, "Please tell us how we can help").max(2000),
+  website: z.string().max(0).optional(), // honeypot
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
@@ -32,7 +33,7 @@ const ContactPage = () => {
     setSubmitting(true);
     try {
       const { data: result, error } = await supabase.functions.invoke("submit-contact", {
-        body: { name: data.name, email: data.email, phone: data.phone || null, interest: data.interest, message: data.message },
+        body: { name: data.name, email: data.email, phone: data.phone || null, interest: data.interest, message: data.message, website: data.website || "" },
       });
       if (error) throw error;
       setSubmitted(true);
@@ -114,6 +115,11 @@ const ContactPage = () => {
                 <Label htmlFor="message">How can we help? *</Label>
                 <Textarea id="message" {...register("message")} placeholder="Tell us what you're looking for, any questions you have, or your preferred appointment times..." className="mt-1 min-h-[120px]" />
                 {errors.message && <p className="text-destructive text-sm mt-1">{errors.message.message}</p>}
+              </div>
+              {/* Honeypot - hidden from real users */}
+              <div className="absolute -left-[9999px]" aria-hidden="true">
+                <label htmlFor="website">Website</label>
+                <input id="website" tabIndex={-1} autoComplete="off" {...register("website")} />
               </div>
               <div className="text-center pt-2">
                 <button type="submit" disabled={submitting} className="bg-primary text-primary-foreground px-10 py-3 rounded-full text-lg font-display font-medium hover:opacity-90 transition-opacity shadow-lg disabled:opacity-50">{submitting ? "Sending..." : "Send Message"}</button>
