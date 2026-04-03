@@ -179,9 +179,13 @@ export type Database = {
           follow_up_notes: string | null
           id: string
           patient_id: string
+          prescriptions: string | null
+          results: string | null
+          symptoms: string | null
           treatment_notes: string | null
           updated_at: string
           visit_date: string
+          visit_status: string
         }
         Insert: {
           chief_complaint?: string | null
@@ -189,9 +193,13 @@ export type Database = {
           follow_up_notes?: string | null
           id?: string
           patient_id: string
+          prescriptions?: string | null
+          results?: string | null
+          symptoms?: string | null
           treatment_notes?: string | null
           updated_at?: string
           visit_date?: string
+          visit_status?: string
         }
         Update: {
           chief_complaint?: string | null
@@ -199,9 +207,13 @@ export type Database = {
           follow_up_notes?: string | null
           id?: string
           patient_id?: string
+          prescriptions?: string | null
+          results?: string | null
+          symptoms?: string | null
           treatment_notes?: string | null
           updated_at?: string
           visit_date?: string
+          visit_status?: string
         }
         Relationships: [
           {
