@@ -52,9 +52,13 @@ type PatientVisit = {
   id: string;
   patient_id: string;
   visit_date: string;
+  visit_status: string;
   chief_complaint: string | null;
   treatment_notes: string | null;
   follow_up_notes: string | null;
+  symptoms: string | null;
+  prescriptions: string | null;
+  results: string | null;
   created_at: string;
 };
 
@@ -106,7 +110,7 @@ const AdminDashboard = () => {
   const [patientVisits, setPatientVisits] = useState<PatientVisit[]>([]);
   const [selectedVisit, setSelectedVisit] = useState<PatientVisit | null>(null);
   const [showAddVisit, setShowAddVisit] = useState(false);
-  const [visitForm, setVisitForm] = useState({ visit_date: new Date().toISOString().split("T")[0], chief_complaint: "", treatment_notes: "", follow_up_notes: "" });
+  const [visitForm, setVisitForm] = useState({ visit_date: new Date().toISOString().split("T")[0], visit_status: "completed", chief_complaint: "", treatment_notes: "", follow_up_notes: "", symptoms: "", prescriptions: "", results: "" });
   const [savingVisit, setSavingVisit] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -246,12 +250,16 @@ const AdminDashboard = () => {
     await supabase.from("patient_visits").insert({
       patient_id: patientId,
       visit_date: visitForm.visit_date,
+      visit_status: visitForm.visit_status,
       chief_complaint: visitForm.chief_complaint || null,
       treatment_notes: visitForm.treatment_notes || null,
       follow_up_notes: visitForm.follow_up_notes || null,
+      symptoms: visitForm.symptoms || null,
+      prescriptions: visitForm.prescriptions || null,
+      results: visitForm.results || null,
     } as never);
-    await logAction("visit_added", "patient_visits", patientId, { visit_date: visitForm.visit_date });
-    setVisitForm({ visit_date: new Date().toISOString().split("T")[0], chief_complaint: "", treatment_notes: "", follow_up_notes: "" });
+    await logAction("visit_added", "patient_visits", patientId, { visit_date: visitForm.visit_date, visit_status: visitForm.visit_status });
+    setVisitForm({ visit_date: new Date().toISOString().split("T")[0], visit_status: "completed", chief_complaint: "", treatment_notes: "", follow_up_notes: "", symptoms: "", prescriptions: "", results: "" });
     setShowAddVisit(false);
     setSavingVisit(false);
     fetchVisits(patientId);
@@ -783,22 +791,68 @@ const AdminDashboard = () => {
 
                           {showAddVisit && (
                             <div className="bg-muted/50 rounded-lg p-4 mb-3 space-y-3">
-                              <div>
-                                <label className="text-xs font-medium text-foreground block mb-1">Visit Date</label>
-                                <Input type="date" value={visitForm.visit_date} onChange={e => setVisitForm({ ...visitForm, visit_date: e.target.value })} />
+                              <div className="grid sm:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-xs font-medium text-foreground block mb-1">Visit Date</label>
+                                  <Input type="date" value={visitForm.visit_date} onChange={e => setVisitForm({ ...visitForm, visit_date: e.target.value })} />
+                                </div>
+                                <div>
+                                  <label className="text-xs font-medium text-foreground block mb-1">Status</label>
+                                  <div className="flex gap-1.5">
+                                    {[
+                                      { value: "completed", label: "✅ Completed", activeClass: "bg-green-600 text-white" },
+                                      { value: "no-show", label: "❌ No-Show", activeClass: "bg-red-600 text-white" },
+                                      { value: "cancelled", label: "🚫 Cancelled", activeClass: "bg-amber-600 text-white" },
+                                    ].map(s => (
+                                      <button
+                                        key={s.value}
+                                        type="button"
+                                        onClick={() => setVisitForm({ ...visitForm, visit_status: s.value })}
+                                        className={`text-xs px-2.5 py-1.5 rounded-full border transition-all ${visitForm.visit_status === s.value ? s.activeClass + " border-transparent" : "border-input bg-background text-muted-foreground hover:bg-muted"}`}
+                                      >
+                                        {s.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <label className="text-xs font-medium text-foreground block mb-1">Chief Complaint</label>
-                                <textarea value={visitForm.chief_complaint} onChange={e => setVisitForm({ ...visitForm, chief_complaint: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="What brought the patient in today..." />
-                              </div>
-                              <div>
-                                <label className="text-xs font-medium text-foreground block mb-1">Treatment Notes</label>
-                                <textarea value={visitForm.treatment_notes} onChange={e => setVisitForm({ ...visitForm, treatment_notes: e.target.value })} className="w-full h-20 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Points used, techniques, observations..." />
-                              </div>
-                              <div>
-                                <label className="text-xs font-medium text-foreground block mb-1">Follow-up Notes</label>
-                                <textarea value={visitForm.follow_up_notes} onChange={e => setVisitForm({ ...visitForm, follow_up_notes: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Recommendations, next visit plan..." />
-                              </div>
+
+                              {visitForm.visit_status === "completed" && (
+                                <>
+                                  <div>
+                                    <label className="text-xs font-medium text-foreground block mb-1">Chief Complaint</label>
+                                    <textarea value={visitForm.chief_complaint} onChange={e => setVisitForm({ ...visitForm, chief_complaint: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="What brought the patient in today..." />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-foreground block mb-1">Symptoms Treated</label>
+                                    <textarea value={visitForm.symptoms} onChange={e => setVisitForm({ ...visitForm, symptoms: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="e.g. lower back pain, insomnia, anxiety..." />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-foreground block mb-1">Treatment Notes</label>
+                                    <textarea value={visitForm.treatment_notes} onChange={e => setVisitForm({ ...visitForm, treatment_notes: e.target.value })} className="w-full h-20 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Points used, techniques, observations..." />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-foreground block mb-1">Prescriptions / Herbs</label>
+                                    <textarea value={visitForm.prescriptions} onChange={e => setVisitForm({ ...visitForm, prescriptions: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Herbal formulas, supplements, lifestyle recommendations..." />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-foreground block mb-1">Results / Response</label>
+                                    <textarea value={visitForm.results} onChange={e => setVisitForm({ ...visitForm, results: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Patient response to treatment, improvements noted..." />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-foreground block mb-1">Follow-up Notes</label>
+                                    <textarea value={visitForm.follow_up_notes} onChange={e => setVisitForm({ ...visitForm, follow_up_notes: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Recommendations, next visit plan..." />
+                                  </div>
+                                </>
+                              )}
+
+                              {visitForm.visit_status !== "completed" && (
+                                <div>
+                                  <label className="text-xs font-medium text-foreground block mb-1">Notes (optional)</label>
+                                  <textarea value={visitForm.follow_up_notes} onChange={e => setVisitForm({ ...visitForm, follow_up_notes: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Any notes about this no-show or cancellation..." />
+                                </div>
+                              )}
+
                               <button onClick={() => addVisit(selectedIntake.id)} disabled={savingVisit} className="text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50">
                                 {savingVisit ? "Saving..." : "Save Visit"}
                               </button>
@@ -808,8 +862,17 @@ const AdminDashboard = () => {
                           {selectedVisit ? (
                             <div className="bg-muted/50 rounded-lg p-4 space-y-3">
                               <div className="flex items-center justify-between">
-                                <p className="text-sm font-medium text-foreground">{format(new Date(selectedVisit.visit_date + "T00:00:00"), "MMMM d, yyyy")}</p>
-                                <button onClick={() => setSelectedVisit(null)} className="text-xs text-muted-foreground hover:text-foreground">← Back to list</button>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-medium text-foreground">{format(new Date(selectedVisit.visit_date + "T00:00:00"), "MMMM d, yyyy")}</p>
+                                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                    selectedVisit.visit_status === "completed" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" :
+                                    selectedVisit.visit_status === "no-show" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" :
+                                    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+                                  }`}>
+                                    {selectedVisit.visit_status === "completed" ? "✅ Completed" : selectedVisit.visit_status === "no-show" ? "❌ No-Show" : "🚫 Cancelled"}
+                                  </span>
+                                </div>
+                                <button onClick={() => setSelectedVisit(null)} className="text-xs text-muted-foreground hover:text-foreground">← Back</button>
                               </div>
                               {selectedVisit.chief_complaint && (
                                 <div>
@@ -817,10 +880,28 @@ const AdminDashboard = () => {
                                   <p className="text-sm text-foreground">{selectedVisit.chief_complaint}</p>
                                 </div>
                               )}
+                              {selectedVisit.symptoms && (
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Symptoms Treated</p>
+                                  <p className="text-sm text-foreground">{selectedVisit.symptoms}</p>
+                                </div>
+                              )}
                               {selectedVisit.treatment_notes && (
                                 <div>
                                   <p className="text-xs font-medium text-muted-foreground mb-0.5">Treatment Notes</p>
                                   <p className="text-sm text-foreground whitespace-pre-wrap">{selectedVisit.treatment_notes}</p>
+                                </div>
+                              )}
+                              {selectedVisit.prescriptions && (
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Prescriptions / Herbs</p>
+                                  <p className="text-sm text-foreground whitespace-pre-wrap">{selectedVisit.prescriptions}</p>
+                                </div>
+                              )}
+                              {selectedVisit.results && (
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Results / Response</p>
+                                  <p className="text-sm text-foreground whitespace-pre-wrap">{selectedVisit.results}</p>
                                 </div>
                               )}
                               {selectedVisit.follow_up_notes && (
@@ -842,15 +923,22 @@ const AdminDashboard = () => {
                                     onClick={() => { setSelectedVisit(v); setShowAddVisit(false); }}
                                     className="flex items-center justify-between bg-background rounded-lg p-3 cursor-pointer hover:bg-muted/50 transition-colors border border-border"
                                   >
-                                    <div>
-                                      <p className="text-sm font-medium text-foreground">{format(new Date(v.visit_date + "T00:00:00"), "MMM d, yyyy")}</p>
-                                      {v.chief_complaint && <p className="text-xs text-muted-foreground line-clamp-1">{v.chief_complaint}</p>}
+                                    <div className="flex items-center gap-2">
+                                      <span className={`w-2 h-2 rounded-full shrink-0 ${
+                                        v.visit_status === "completed" ? "bg-green-500" :
+                                        v.visit_status === "no-show" ? "bg-red-500" : "bg-amber-500"
+                                      }`} />
+                                      <div>
+                                        <p className="text-sm font-medium text-foreground">{format(new Date(v.visit_date + "T00:00:00"), "MMM d, yyyy")}</p>
+                                        {v.chief_complaint && <p className="text-xs text-muted-foreground line-clamp-1">{v.chief_complaint}</p>}
+                                      </div>
                                     </div>
                                     <span className="text-xs text-muted-foreground">→</span>
                                   </div>
                                 ))}
                               </div>
                             )
+                          )
                           )}
                           <textarea
                             value={editNotes}
