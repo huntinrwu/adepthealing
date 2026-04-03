@@ -225,6 +225,27 @@ export type Database = {
           },
         ]
       }
+      submission_rate_limits: {
+        Row: {
+          form_type: string
+          id: string
+          ip_address: string
+          submitted_at: string
+        }
+        Insert: {
+          form_type: string
+          id?: string
+          ip_address: string
+          submitted_at?: string
+        }
+        Update: {
+          form_type?: string
+          id?: string
+          ip_address?: string
+          submitted_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
