@@ -33,7 +33,7 @@ const ContactPage = () => {
     setSubmitting(true);
     try {
       const { data: result, error } = await supabase.functions.invoke("submit-contact", {
-        body: { name: data.name, email: data.email, phone: data.phone || null, interest: data.interest, message: data.message },
+        body: { name: data.name, email: data.email, phone: data.phone || null, interest: data.interest, message: data.message, website: data.website || "" },
       });
       if (error) throw error;
       setSubmitted(true);
