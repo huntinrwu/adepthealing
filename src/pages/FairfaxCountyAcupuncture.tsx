@@ -75,7 +75,7 @@ const FairfaxCountyAcupuncture = () => {
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               {[
-                { title: "Over a Decade of Experience", description: "With 10+ years of clinical practice, Max has treated thousands of patients across a wide range of conditions." },
+                { title: "Over a Decade of Experience", description: "With 10+ years of clinical practice, we've treated thousands of patients across a wide range of conditions." },
                 { title: "Personalized Treatment Plans", description: "No two patients are alike. Every session is tailored to your specific condition, health history, and wellness goals." },
                 { title: "Convenient Herndon Location", description: "Located at 1033 Sterling Road in Herndon — an easy drive from Reston, Vienna, Tysons, Great Falls, and throughout Fairfax County." },
               ].map((item, index) => (
