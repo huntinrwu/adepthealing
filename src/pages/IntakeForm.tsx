@@ -158,7 +158,7 @@ const IntakeForm = () => {
 
               <section className="bg-card rounded-2xl p-8 shadow-sm">
                 <h2 className="heading-md text-foreground mb-4">Consent</h2>
-                <p className="text-sm text-muted-foreground mb-4">I understand that the information I provide will be used to create a personalized treatment plan. I consent to acupuncture and related holistic therapies as recommended by my practitioner.</p>
+                <p className="text-sm text-muted-foreground mb-4">I understand that the information I provide will be used to create a personalized treatment plan. I consent to acupuncture treatments as recommended by my practitioner.</p>
                 <label className="flex items-start gap-3 cursor-pointer">
                   <Checkbox onCheckedChange={(checked) => setValue("consent", checked === true, { shouldValidate: true })} />
                   <span className="text-sm text-foreground">I agree to the above and consent to treatment *</span>
