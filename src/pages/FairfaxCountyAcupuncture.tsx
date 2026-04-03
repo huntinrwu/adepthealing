@@ -71,7 +71,7 @@ const FairfaxCountyAcupuncture = () => {
           <div className="max-w-7xl mx-auto">
             <div className={`text-center mb-12 transition-all duration-700 ${whyInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
               <h2 className="heading-lg text-foreground mb-4">Why Fairfax County Patients Choose Adept Healing</h2>
-              <p className="body-md text-muted-foreground max-w-2xl mx-auto">Patients across Fairfax County trust Max for effective, compassionate acupuncture care.</p>
+              <p className="body-md text-muted-foreground max-w-2xl mx-auto">Patients across Fairfax County trust us for effective, compassionate acupuncture care.</p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               {[
