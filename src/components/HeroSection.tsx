@@ -17,7 +17,7 @@ const HeroSection = () => {
 
       <div className="relative z-10 text-center px-4 md:px-6 max-w-4xl mx-auto pt-16 md:pt-0 animate-fade-in">
         <p className="text-primary-foreground/80 font-body text-sm tracking-[0.3em] uppercase mb-6">
-          Acupuncture &bull; Holistic Wellness &bull; Herndon, VA
+          Acupuncture &bull; Herndon, VA
         </p>
 
         <h1 className="heading-xl text-primary-foreground mb-6">
