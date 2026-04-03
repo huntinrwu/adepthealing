@@ -862,8 +862,17 @@ const AdminDashboard = () => {
                           {selectedVisit ? (
                             <div className="bg-muted/50 rounded-lg p-4 space-y-3">
                               <div className="flex items-center justify-between">
-                                <p className="text-sm font-medium text-foreground">{format(new Date(selectedVisit.visit_date + "T00:00:00"), "MMMM d, yyyy")}</p>
-                                <button onClick={() => setSelectedVisit(null)} className="text-xs text-muted-foreground hover:text-foreground">← Back to list</button>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-medium text-foreground">{format(new Date(selectedVisit.visit_date + "T00:00:00"), "MMMM d, yyyy")}</p>
+                                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                    selectedVisit.visit_status === "completed" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" :
+                                    selectedVisit.visit_status === "no-show" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" :
+                                    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+                                  }`}>
+                                    {selectedVisit.visit_status === "completed" ? "✅ Completed" : selectedVisit.visit_status === "no-show" ? "❌ No-Show" : "🚫 Cancelled"}
+                                  </span>
+                                </div>
+                                <button onClick={() => setSelectedVisit(null)} className="text-xs text-muted-foreground hover:text-foreground">← Back</button>
                               </div>
                               {selectedVisit.chief_complaint && (
                                 <div>
@@ -871,10 +880,28 @@ const AdminDashboard = () => {
                                   <p className="text-sm text-foreground">{selectedVisit.chief_complaint}</p>
                                 </div>
                               )}
+                              {selectedVisit.symptoms && (
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Symptoms Treated</p>
+                                  <p className="text-sm text-foreground">{selectedVisit.symptoms}</p>
+                                </div>
+                              )}
                               {selectedVisit.treatment_notes && (
                                 <div>
                                   <p className="text-xs font-medium text-muted-foreground mb-0.5">Treatment Notes</p>
                                   <p className="text-sm text-foreground whitespace-pre-wrap">{selectedVisit.treatment_notes}</p>
+                                </div>
+                              )}
+                              {selectedVisit.prescriptions && (
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Prescriptions / Herbs</p>
+                                  <p className="text-sm text-foreground whitespace-pre-wrap">{selectedVisit.prescriptions}</p>
+                                </div>
+                              )}
+                              {selectedVisit.results && (
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Results / Response</p>
+                                  <p className="text-sm text-foreground whitespace-pre-wrap">{selectedVisit.results}</p>
                                 </div>
                               )}
                               {selectedVisit.follow_up_notes && (
@@ -896,15 +923,22 @@ const AdminDashboard = () => {
                                     onClick={() => { setSelectedVisit(v); setShowAddVisit(false); }}
                                     className="flex items-center justify-between bg-background rounded-lg p-3 cursor-pointer hover:bg-muted/50 transition-colors border border-border"
                                   >
-                                    <div>
-                                      <p className="text-sm font-medium text-foreground">{format(new Date(v.visit_date + "T00:00:00"), "MMM d, yyyy")}</p>
-                                      {v.chief_complaint && <p className="text-xs text-muted-foreground line-clamp-1">{v.chief_complaint}</p>}
+                                    <div className="flex items-center gap-2">
+                                      <span className={`w-2 h-2 rounded-full shrink-0 ${
+                                        v.visit_status === "completed" ? "bg-green-500" :
+                                        v.visit_status === "no-show" ? "bg-red-500" : "bg-amber-500"
+                                      }`} />
+                                      <div>
+                                        <p className="text-sm font-medium text-foreground">{format(new Date(v.visit_date + "T00:00:00"), "MMM d, yyyy")}</p>
+                                        {v.chief_complaint && <p className="text-xs text-muted-foreground line-clamp-1">{v.chief_complaint}</p>}
+                                      </div>
                                     </div>
                                     <span className="text-xs text-muted-foreground">→</span>
                                   </div>
                                 ))}
                               </div>
                             )
+                          )
                           )}
                           <textarea
                             value={editNotes}
