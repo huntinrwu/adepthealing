@@ -31,8 +31,8 @@ const ContactPage = () => {
     if (submitting) return;
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("contact_submissions").insert({
-        name: data.name, email: data.email, phone: data.phone || null, interest: data.interest, message: data.message,
+      const { data: result, error } = await supabase.functions.invoke("submit-contact", {
+        body: { name: data.name, email: data.email, phone: data.phone || null, interest: data.interest, message: data.message },
       });
       if (error) throw error;
       setSubmitted(true);
