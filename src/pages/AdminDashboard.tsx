@@ -250,12 +250,16 @@ const AdminDashboard = () => {
     await supabase.from("patient_visits").insert({
       patient_id: patientId,
       visit_date: visitForm.visit_date,
+      visit_status: visitForm.visit_status,
       chief_complaint: visitForm.chief_complaint || null,
       treatment_notes: visitForm.treatment_notes || null,
       follow_up_notes: visitForm.follow_up_notes || null,
+      symptoms: visitForm.symptoms || null,
+      prescriptions: visitForm.prescriptions || null,
+      results: visitForm.results || null,
     } as never);
-    await logAction("visit_added", "patient_visits", patientId, { visit_date: visitForm.visit_date });
-    setVisitForm({ visit_date: new Date().toISOString().split("T")[0], chief_complaint: "", treatment_notes: "", follow_up_notes: "" });
+    await logAction("visit_added", "patient_visits", patientId, { visit_date: visitForm.visit_date, visit_status: visitForm.visit_status });
+    setVisitForm({ visit_date: new Date().toISOString().split("T")[0], visit_status: "completed", chief_complaint: "", treatment_notes: "", follow_up_notes: "", symptoms: "", prescriptions: "", results: "" });
     setShowAddVisit(false);
     setSavingVisit(false);
     fetchVisits(patientId);
