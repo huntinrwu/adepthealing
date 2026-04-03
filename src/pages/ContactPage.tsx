@@ -116,6 +116,11 @@ const ContactPage = () => {
                 <Textarea id="message" {...register("message")} placeholder="Tell us what you're looking for, any questions you have, or your preferred appointment times..." className="mt-1 min-h-[120px]" />
                 {errors.message && <p className="text-destructive text-sm mt-1">{errors.message.message}</p>}
               </div>
+              {/* Honeypot - hidden from real users */}
+              <div className="absolute -left-[9999px]" aria-hidden="true">
+                <label htmlFor="website">Website</label>
+                <input id="website" tabIndex={-1} autoComplete="off" {...register("website")} />
+              </div>
               <div className="text-center pt-2">
                 <button type="submit" disabled={submitting} className="bg-primary text-primary-foreground px-10 py-3 rounded-full text-lg font-display font-medium hover:opacity-90 transition-opacity shadow-lg disabled:opacity-50">{submitting ? "Sending..." : "Send Message"}</button>
               </div>
