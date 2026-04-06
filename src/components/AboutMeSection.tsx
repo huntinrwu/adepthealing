@@ -18,7 +18,7 @@ const AboutMeSection = () => {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           <div className={`transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"}`}>
             <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">About</p>
-            <h2 className="heading-lg text-foreground mb-6">Meet Max (Tzeyoung) Wu, LAc</h2>
+            <h2 className="heading-lg text-foreground mb-6"><h2 className="heading-lg text-foreground mb-6">Meet Tzeyoung Max Wu, LAc</h2></h2>
 
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6">
               <div className="shrink-0">
