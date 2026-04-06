@@ -4,12 +4,10 @@ import { Menu, X } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
 const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "Services", href: "/#services" },
-  { label: "About", href: "/#about" },
-  { label: "Testimonials", href: "/#testimonials" },
-  { label: "FAQ", href: "/faq" },
-  { label: "Contact", href: "/contact" },
+  { label: "About", href: "#about" },
+  { label: "Acupuncture", href: "#acupuncture" },
+  { label: "Location", href: "#location" },
+  { label: "Contact", href: "#contact" },
 ];
 
 const Navbar = () => {
@@ -18,17 +16,13 @@ const Navbar = () => {
 
   const handleNavClick = (href: string) => {
     setIsOpen(false);
-    if (href.startsWith("/#")) {
-      const id = href.replace("/#", "");
-      if (location.pathname === "/") {
-        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-      } else {
-        window.location.href = href;
-      }
+    const id = href.replace("#", "");
+    if (location.pathname === "/") {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      window.location.href = "/" + href;
     }
   };
-
-  const isInternal = (href: string) => !href.startsWith("/#") && href.startsWith("/");
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
@@ -41,24 +35,27 @@ const Navbar = () => {
           </Link>
 
           <div className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) =>
-              isInternal(link.href) ? (
-                <Link key={link.label} to={link.href} className="text-sm font-body tracking-wide text-muted-foreground hover:text-primary transition-colors duration-300">
-                  {link.label}
-                </Link>
-              ) : (
-                <a key={link.label} href={link.href} onClick={(e) => { if (link.href.startsWith("/#")) { e.preventDefault(); handleNavClick(link.href); } }} className="text-sm font-body tracking-wide text-muted-foreground hover:text-primary transition-colors duration-300">
-                  {link.label}
-                </a>
-              )
-            )}
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick(link.href);
+                }}
+                className="text-sm font-body tracking-wide text-muted-foreground hover:text-primary transition-colors duration-300"
+              >
+                {link.label}
+              </a>
+            ))}
             <ThemeToggle />
-            <Link to="/contact" className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
-              Book Now
-            </Link>
           </div>
 
-          <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden text-foreground p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center" aria-label="Toggle menu">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="lg:hidden text-foreground p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label="Toggle menu"
+          >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
@@ -67,22 +64,21 @@ const Navbar = () => {
       {isOpen && (
         <div className="lg:hidden bg-background border-b border-border">
           <div className="px-4 py-4 space-y-1">
-            {navLinks.map((link) =>
-              isInternal(link.href) ? (
-                <Link key={link.label} to={link.href} onClick={() => setIsOpen(false)} className="block text-lg font-display text-foreground hover:text-primary transition-colors py-3 min-h-[44px]">
-                  {link.label}
-                </Link>
-              ) : (
-                <a key={link.label} href={link.href} onClick={(e) => { if (link.href.startsWith("/#")) { e.preventDefault(); handleNavClick(link.href); } else { setIsOpen(false); } }} className="block text-lg font-display text-foreground hover:text-primary transition-colors py-3 min-h-[44px]">
-                  {link.label}
-                </a>
-              )
-            )}
-            <div className="flex items-center justify-between pt-2">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick(link.href);
+                }}
+                className="block text-lg font-display text-foreground hover:text-primary transition-colors py-3 min-h-[44px]"
+              >
+                {link.label}
+              </a>
+            ))}
+            <div className="pt-2">
               <ThemeToggle />
-              <Link to="/contact" onClick={() => setIsOpen(false)} className="block text-center bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium">
-                Book Now
-              </Link>
             </div>
           </div>
         </div>
