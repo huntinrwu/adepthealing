@@ -1,25 +1,38 @@
 import { MapPin, Clock } from "lucide-react";
 import { useInView } from "@/hooks/useInView";
+import zenGardenBg from "@/assets/zen-garden-bg.jpg";
 
 const LocationSection = () => {
   const { ref, inView } = useInView();
 
   return (
-    <section id="location" className="section-padding bg-background">
-      <div className="max-w-7xl mx-auto" ref={ref}>
+    <section id="location" className="relative section-padding overflow-hidden">
+      <div className="absolute inset-0">
+        <img
+          src={zenGardenBg}
+          alt=""
+          className="w-full h-full object-cover"
+          loading="lazy"
+          width={1920}
+          height={1080}
+        />
+        <div className="absolute inset-0 bg-background/92 dark:bg-background/95" />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto" ref={ref}>
         <div className={`text-center mb-12 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
           <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">Visit</p>
           <h2 className="heading-lg text-foreground mb-4">Where to Find Us</h2>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-6 mb-10 max-w-2xl mx-auto">
-          <div className={`bg-card rounded-xl p-6 text-center shadow-sm transition-all duration-500 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+          <div className={`bg-card/95 backdrop-blur-sm rounded-xl p-6 text-center shadow-sm transition-all duration-500 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
             <MapPin className="w-7 h-7 text-primary mx-auto mb-3" />
             <h3 className="font-display text-lg font-medium text-foreground mb-2">Location</h3>
             <p className="text-sm text-muted-foreground">1033 Sterling Road, Suite 105</p>
             <p className="text-sm text-muted-foreground">Herndon, VA</p>
           </div>
-          <div className={`bg-card rounded-xl p-6 text-center shadow-sm transition-all duration-500 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`} style={{ transitionDelay: "100ms" }}>
+          <div className={`bg-card/95 backdrop-blur-sm rounded-xl p-6 text-center shadow-sm transition-all duration-500 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`} style={{ transitionDelay: "100ms" }}>
             <Clock className="w-7 h-7 text-primary mx-auto mb-3" />
             <h3 className="font-display text-lg font-medium text-foreground mb-2">Hours</h3>
             <p className="text-sm text-muted-foreground">Fri–Sun: By appointment</p>

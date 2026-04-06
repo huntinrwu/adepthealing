@@ -1,6 +1,7 @@
 import { Heart, Leaf, Shield, Sparkles } from "lucide-react";
 import { useInView } from "@/hooks/useInView";
 import maxPhoto from "@/assets/max-wu.png";
+import bambooBg from "@/assets/bamboo-bg.jpg";
 
 const values = [
   { icon: Heart, title: "Compassionate Care", description: "Every treatment starts with listening to your unique health journey." },
@@ -13,12 +14,24 @@ const AboutMeSection = () => {
   const { ref, inView } = useInView();
 
   return (
-    <section id="about" className="section-padding bg-background">
-      <div className="max-w-7xl mx-auto" ref={ref}>
+    <section id="about" className="relative section-padding overflow-hidden">
+      <div className="absolute inset-0">
+        <img
+          src={bambooBg}
+          alt=""
+          className="w-full h-full object-cover"
+          loading="lazy"
+          width={1920}
+          height={1080}
+        />
+        <div className="absolute inset-0 bg-background/93 dark:bg-background/95" />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto" ref={ref}>
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           <div className={`transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"}`}>
             <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">About</p>
-            <h2 className="heading-lg text-foreground mb-6"><h2 className="heading-lg text-foreground mb-6">Meet Tzeyoung Max Wu, LAc</h2></h2>
+            <h2 className="heading-lg text-foreground mb-6">Meet Tzeyoung Max Wu, LAc</h2>
 
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6">
               <div className="shrink-0">
@@ -64,7 +77,7 @@ const AboutMeSection = () => {
             {values.map((value, index) => (
               <div
                 key={value.title}
-                className={`bg-card rounded-xl p-6 shadow-sm transition-all duration-500 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+                className={`bg-card/95 backdrop-blur-sm rounded-xl p-6 shadow-sm transition-all duration-500 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 <value.icon className="w-7 h-7 text-primary mb-3" />
