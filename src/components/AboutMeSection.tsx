@@ -1,29 +1,50 @@
+import { Heart, Leaf, Shield, Sparkles } from "lucide-react";
 import { useInView } from "@/hooks/useInView";
+
+const values = [
+  { icon: Heart, title: "Compassionate Care", description: "Every treatment starts with listening to your unique health journey." },
+  { icon: Leaf, title: "Natural Healing", description: "Time-tested traditional Chinese medicine techniques that support the body's innate healing." },
+  { icon: Shield, title: "Evidence-Informed", description: "Ancient wisdom integrated with modern anatomy and physiology." },
+  { icon: Sparkles, title: "Whole-Person Wellness", description: "We treat the complete person — body, mind, and spirit — not just isolated symptoms." },
+];
 
 const AboutMeSection = () => {
   const { ref, inView } = useInView();
 
   return (
-    <section id="about" className="pt-28 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 lg:px-12 bg-background">
-      <div className="max-w-3xl mx-auto" ref={ref}>
-        <div className={`transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-          <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">About</p>
-          <h1 className="heading-lg text-foreground mb-6">Hi, I'm Max</h1>
-          <div className="space-y-4 body-md text-muted-foreground">
-            <p>
-              I'm a licensed acupuncturist with over a decade of clinical experience. 
-              I practice in Herndon, Virginia, and treat patients from across Fairfax County, 
-              Northern Virginia, and the DC metro area.
-            </p>
-            <p>
-              My approach is rooted in traditional Chinese medicine with a focus on treating 
-              the whole person — not just symptoms. Whether you're dealing with chronic pain, 
-              stress, digestive issues, or sleep problems, I work with you to create a 
-              personalized treatment plan.
-            </p>
-            <p className="text-foreground font-medium">
-              Most insurance carriers accepted.
-            </p>
+    <section id="about" className="section-padding bg-background">
+      <div className="max-w-7xl mx-auto" ref={ref}>
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className={`transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"}`}>
+            <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">About</p>
+            <h2 className="heading-lg text-foreground mb-6">Rooted in Tradition, Focused on You</h2>
+            <div className="space-y-4 body-md text-muted-foreground">
+              <p>
+                With over a decade of clinical experience and a deep reverence for traditional 
+                Chinese medicine, we bring expert care to every session.
+              </p>
+              <p>
+                Whether you're managing chronic pain, stress, digestive issues, or sleep quality — 
+                our personalized plans restore balance and support long-term vitality.
+              </p>
+              <p className="text-foreground font-medium">
+                Most insurance carriers accepted.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-5">
+            {values.map((value, index) => (
+              <div
+                key={value.title}
+                className={`bg-card rounded-xl p-6 shadow-sm transition-all duration-500 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+                style={{ transitionDelay: `${index * 100}ms` }}
+              >
+                <value.icon className="w-7 h-7 text-primary mb-3" />
+                <h3 className="font-display text-lg font-medium text-foreground mb-2">{value.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{value.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
