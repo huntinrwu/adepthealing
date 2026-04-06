@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CheckCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -28,7 +29,8 @@ const intakeSchema = z.object({
   allergies: z.string().max(500).optional(),
   previousAcupuncture: z.string().min(1, "Please select"),
   referralSource: z.string().max(200).optional(),
-  consent: z.boolean().refine((v) => v === true, "You must agree to proceed"),
+  consentTreatment: z.boolean().refine((v) => v === true, "You must consent to treatment"),
+  consentPrivacy: z.boolean().refine((v) => v === true, "You must acknowledge the privacy notice"),
 });
 
 type IntakeFormData = z.infer<typeof intakeSchema>;
@@ -46,7 +48,7 @@ const IntakeForm = () => {
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<IntakeFormData>({
     resolver: zodResolver(intakeSchema),
-    defaultValues: { consent: false },
+    defaultValues: { consentTreatment: false, consentPrivacy: false },
   });
 
   const toggleCondition = (condition: string) => {
@@ -73,8 +75,11 @@ const IntakeForm = () => {
       if (result?.error) throw new Error(result.error);
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (err) { console.error("Error submitting intake form:", err); }
-    finally { setSubmitting(false); }
+    } catch {
+      // Do not log PHI — only show a generic message
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -85,7 +90,10 @@ const IntakeForm = () => {
           <div className="text-center max-w-lg animate-fade-in">
             <CheckCircle className="w-16 h-16 text-primary mx-auto mb-6" />
             <h1 className="heading-lg text-foreground mb-4">Thank You!</h1>
-            <p className="body-lg text-muted-foreground mb-8">Your intake form has been received. Our team will review your information and contact you shortly to schedule your first appointment.</p>
+            <p className="body-lg text-muted-foreground mb-8">
+              Your intake form has been securely received. We will review your information 
+              and contact you shortly to schedule your first appointment.
+            </p>
             <a href="/" className="bg-primary text-primary-foreground px-8 py-3 rounded-full font-medium hover:opacity-90 transition-opacity">Back to Home</a>
           </div>
         </div>
@@ -98,7 +106,7 @@ const IntakeForm = () => {
     <>
       <Helmet>
         <title>Patient Intake Form | Adept Healing Acupuncture | Herndon VA</title>
-        <meta name="description" content="Complete the patient intake form for Adept Healing acupuncture. Share your health history so we can create a personalized acupuncture treatment plan." />
+        <meta name="description" content="Complete the patient intake form for Adept Healing acupuncture. Your information is kept secure and confidential in accordance with HIPAA." />
         <link rel="canonical" href="https://adepthealing.com/intake" />
       </Helmet>
       <Navbar />
@@ -108,20 +116,23 @@ const IntakeForm = () => {
             <div className="text-center mb-12 animate-fade-in">
               <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">Welcome</p>
               <h1 className="heading-lg text-foreground mb-4">Patient Intake Form</h1>
-              <p className="body-md text-muted-foreground max-w-xl mx-auto">Please fill out this form before your first visit. This helps us understand your health history and create a personalized acupuncture treatment plan.</p>
+              <p className="body-md text-muted-foreground max-w-xl mx-auto">
+                Please fill out this form before your first visit. Your health information 
+                is kept secure and confidential in accordance with HIPAA regulations.
+              </p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
               <section className="bg-card rounded-2xl p-8 shadow-sm">
                 <h2 className="heading-md text-foreground mb-6">Personal Information</h2>
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div><Label htmlFor="firstName">First Name *</Label><Input id="firstName" {...register("firstName")} className="mt-1" />{errors.firstName && <p className="text-destructive text-sm mt-1">{errors.firstName.message}</p>}</div>
-                  <div><Label htmlFor="lastName">Last Name *</Label><Input id="lastName" {...register("lastName")} className="mt-1" />{errors.lastName && <p className="text-destructive text-sm mt-1">{errors.lastName.message}</p>}</div>
-                  <div><Label htmlFor="email">Email *</Label><Input id="email" type="email" {...register("email")} className="mt-1" />{errors.email && <p className="text-destructive text-sm mt-1">{errors.email.message}</p>}</div>
-                  <div><Label htmlFor="phone">Phone *</Label><Input id="phone" type="tel" {...register("phone")} className="mt-1" />{errors.phone && <p className="text-destructive text-sm mt-1">{errors.phone.message}</p>}</div>
-                  <div><Label htmlFor="dateOfBirth">Date of Birth *</Label><Input id="dateOfBirth" type="date" {...register("dateOfBirth")} className="mt-1" />{errors.dateOfBirth && <p className="text-destructive text-sm mt-1">{errors.dateOfBirth.message}</p>}</div>
+                  <div><Label htmlFor="firstName">First Name *</Label><Input id="firstName" {...register("firstName")} className="mt-1" autoComplete="given-name" />{errors.firstName && <p className="text-destructive text-sm mt-1">{errors.firstName.message}</p>}</div>
+                  <div><Label htmlFor="lastName">Last Name *</Label><Input id="lastName" {...register("lastName")} className="mt-1" autoComplete="family-name" />{errors.lastName && <p className="text-destructive text-sm mt-1">{errors.lastName.message}</p>}</div>
+                  <div><Label htmlFor="email">Email *</Label><Input id="email" type="email" {...register("email")} className="mt-1" autoComplete="email" />{errors.email && <p className="text-destructive text-sm mt-1">{errors.email.message}</p>}</div>
+                  <div><Label htmlFor="phone">Phone *</Label><Input id="phone" type="tel" {...register("phone")} className="mt-1" autoComplete="tel" />{errors.phone && <p className="text-destructive text-sm mt-1">{errors.phone.message}</p>}</div>
+                  <div><Label htmlFor="dateOfBirth">Date of Birth *</Label><Input id="dateOfBirth" type="date" {...register("dateOfBirth")} className="mt-1" autoComplete="bday" />{errors.dateOfBirth && <p className="text-destructive text-sm mt-1">{errors.dateOfBirth.message}</p>}</div>
                   <div><Label htmlFor="gender">Gender *</Label><select id="gender" {...register("gender")} className="mt-1 w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"><option value="">Select...</option><option value="male">Male</option><option value="female">Female</option><option value="non-binary">Non-binary</option><option value="prefer-not">Prefer not to say</option></select>{errors.gender && <p className="text-destructive text-sm mt-1">{errors.gender.message}</p>}</div>
-                  <div className="md:col-span-2"><Label htmlFor="address">Address *</Label><Input id="address" {...register("address")} className="mt-1" />{errors.address && <p className="text-destructive text-sm mt-1">{errors.address.message}</p>}</div>
+                  <div className="md:col-span-2"><Label htmlFor="address">Address *</Label><Input id="address" {...register("address")} className="mt-1" autoComplete="street-address" />{errors.address && <p className="text-destructive text-sm mt-1">{errors.address.message}</p>}</div>
                 </div>
               </section>
 
@@ -157,14 +168,59 @@ const IntakeForm = () => {
               </section>
 
               <section className="bg-card rounded-2xl p-8 shadow-sm">
-                <h2 className="heading-md text-foreground mb-4">Consent</h2>
-                <p className="text-sm text-muted-foreground mb-4">I understand that the information I provide will be used to create a personalized treatment plan. I consent to acupuncture treatments as recommended by my practitioner.</p>
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <Checkbox onCheckedChange={(checked) => setValue("consent", checked === true, { shouldValidate: true })} />
-                  <span className="text-sm text-foreground">I agree to the above and consent to treatment *</span>
-                </label>
-                {errors.consent && <p className="text-destructive text-sm mt-1">{errors.consent.message}</p>}
+                <h2 className="heading-md text-foreground mb-4">Consent & Privacy</h2>
+                
+                <div className="bg-sage-light rounded-xl p-5 mb-6 text-sm text-muted-foreground space-y-3">
+                  <p className="font-medium text-foreground">Notice of Privacy Practices (HIPAA)</p>
+                  <p>
+                    Adept Healing is committed to protecting your protected health information (PHI) 
+                    in accordance with the Health Insurance Portability and Accountability Act (HIPAA). 
+                    Your health information will be used only for the purposes of treatment, payment, 
+                    and healthcare operations.
+                  </p>
+                  <p>
+                    <strong>Your rights:</strong> You have the right to request access to your health 
+                    records, request corrections to your information, request restrictions on certain 
+                    uses of your information, and receive a copy of this privacy notice.
+                  </p>
+                  <p>
+                    <strong>Our responsibilities:</strong> We are required by law to maintain the 
+                    privacy and security of your PHI, notify you if a breach occurs, and follow 
+                    the terms of this notice. We will not use or share your information other than 
+                    as described here without your written authorization.
+                  </p>
+                  <p>
+                    For questions about our privacy practices, please contact us through the form 
+                    on our website. A full copy of our Notice of Privacy Practices is available upon request.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <Checkbox onCheckedChange={(checked) => setValue("consentTreatment", checked === true, { shouldValidate: true })} className="mt-0.5" />
+                    <span className="text-sm text-foreground">
+                      I consent to acupuncture treatment as recommended by my practitioner. I understand 
+                      that results vary and that I may discontinue treatment at any time. *
+                    </span>
+                  </label>
+                  {errors.consentTreatment && <p className="text-destructive text-sm ml-7">{errors.consentTreatment.message}</p>}
+
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <Checkbox onCheckedChange={(checked) => setValue("consentPrivacy", checked === true, { shouldValidate: true })} className="mt-0.5" />
+                    <span className="text-sm text-foreground">
+                      I acknowledge that I have read and understand the Notice of Privacy Practices above, 
+                      and I consent to the use of my health information as described. *
+                    </span>
+                  </label>
+                  {errors.consentPrivacy && <p className="text-destructive text-sm ml-7">{errors.consentPrivacy.message}</p>}
+                </div>
               </section>
+
+              {/* Honeypot */}
+              <div className="absolute -left-[9999px]" aria-hidden="true">
+                <label htmlFor="website">Website</label>
+                <input id="website" tabIndex={-1} autoComplete="off" />
+              </div>
 
               <div className="text-center">
                 <button type="submit" disabled={submitting} className="bg-primary text-primary-foreground px-12 py-4 rounded-full text-lg font-display font-medium hover:opacity-90 transition-opacity shadow-lg disabled:opacity-50">{submitting ? "Submitting..." : "Submit Intake Form"}</button>
