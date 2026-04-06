@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { Link } from "react-router-dom";
+const Footer = () => {
   return (
     <footer className="bg-foreground text-primary-foreground">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-12 py-10 md:py-14">
@@ -44,11 +44,11 @@ import { Link } from "react-router-dom";
                   {link.label}
                 </a>
               ))}
-              <Link
-                to="/intake"
-                className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
-              >
+              <Link to="/intake" className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
                 Patient Intake Form
+              </Link>
+              <Link to="/privacy" className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                Privacy Policy
               </Link>
             </nav>
           </div>
