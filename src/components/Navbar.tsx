@@ -62,7 +62,7 @@ const Navbar = () => {
       </div>
 
       {isOpen && (
-        <div className="lg:hidden bg-background border-b border-border">
+        <div className="lg:hidden bg-background border-b border-border shadow-lg">
           <div className="px-4 py-4 space-y-1">
             {navLinks.map((link) => (
               <a
