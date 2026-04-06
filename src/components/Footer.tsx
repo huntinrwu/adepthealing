@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-const Footer = () => {
+import { Link } from "react-router-dom";
   return (
     <footer className="bg-foreground text-primary-foreground">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-12 py-10 md:py-14">
