@@ -21,11 +21,11 @@ const LocationSection = () => {
 
       <div className="relative max-w-7xl mx-auto" ref={ref}>
         <div className={`text-center mb-12 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-          <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">Visit</p>
-          <h2 className="heading-lg text-foreground mb-4">Where to Find Us</h2>
+          <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-3">Visit</p>
+          <h2 className="heading-lg text-foreground mb-3">Where to Find Us</h2>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-6 mb-10 max-w-2xl mx-auto">
+        <div className="grid sm:grid-cols-2 gap-4 mb-8 max-w-2xl mx-auto">
           <div className={`bg-card/95 backdrop-blur-sm rounded-xl p-6 text-center shadow-sm transition-all duration-500 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
             <MapPin className="w-7 h-7 text-primary mx-auto mb-3" />
             <h3 className="font-display text-lg font-medium text-foreground mb-2">Location</h3>

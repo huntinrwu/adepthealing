@@ -42,7 +42,7 @@ const ContactFormSection = () => {
   };
 
   return (
-    <section id="contact" className="py-16 md:py-20 px-4 md:px-6 lg:px-12 bg-sage-light">
+    <section id="contact" className="py-10 md:py-20 px-4 md:px-6 lg:px-12 bg-sage-light">
       <div className="max-w-2xl mx-auto" ref={ref}>
         <div className={`transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
           <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">Contact</p>

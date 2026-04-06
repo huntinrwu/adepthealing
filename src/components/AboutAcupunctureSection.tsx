@@ -30,7 +30,7 @@ const AboutAcupunctureSection = () => {
       </div>
 
       <div className="relative max-w-7xl mx-auto" ref={ref}>
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-start">
           <div className={`transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
             <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">Services</p>
             <h2 className="heading-lg text-foreground mb-6">How Acupuncture Can Help</h2>
