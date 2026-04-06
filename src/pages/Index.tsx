@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
+import HeroSection from "@/components/HeroSection";
 import AboutMeSection from "@/components/AboutMeSection";
 import AboutAcupunctureSection from "@/components/AboutAcupunctureSection";
 import LocationSection from "@/components/LocationSection";
@@ -48,10 +49,7 @@ const Index = () => {
           content="Adept Healing offers acupuncture in Herndon, Virginia. Pain relief, stress management, and wellness. Most insurance carriers accepted. Serving Fairfax County and Northern Virginia."
         />
         <meta property="og:title" content="Adept Healing | Acupuncture in Herndon, VA" />
-        <meta
-          property="og:description"
-          content="Acupuncture in Herndon, Virginia. Pain relief, stress management, and wellness. Most insurance carriers accepted."
-        />
+        <meta property="og:description" content="Acupuncture in Herndon, Virginia. Pain relief, stress management, and wellness. Most insurance carriers accepted." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://adepthealing.com" />
         <link rel="canonical" href="https://adepthealing.com" />
@@ -60,6 +58,7 @@ const Index = () => {
 
       <Navbar />
       <main>
+        <HeroSection />
         <AboutMeSection />
         <AboutAcupunctureSection />
         <LocationSection />
