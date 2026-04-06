@@ -59,10 +59,10 @@ const Index = () => {
       <Navbar />
       <main>
         <HeroSection />
-        <AboutMeSection />
         <AboutAcupunctureSection />
         <LocationSection />
         <ContactFormSection />
+        <AboutMeSection />
       </main>
       <Footer />
     </>
