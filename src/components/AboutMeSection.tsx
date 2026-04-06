@@ -1,5 +1,6 @@
 import { Heart, Leaf, Shield, Sparkles } from "lucide-react";
 import { useInView } from "@/hooks/useInView";
+import maxPhoto from "@/assets/max-wu.png";
 
 const values = [
   { icon: Heart, title: "Compassionate Care", description: "Every treatment starts with listening to your unique health journey." },
