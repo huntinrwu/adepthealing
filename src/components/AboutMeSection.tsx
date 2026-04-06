@@ -14,18 +14,29 @@ const AboutMeSection = () => {
   return (
     <section id="about" className="section-padding bg-background">
       <div className="max-w-7xl mx-auto" ref={ref}>
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           <div className={`transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"}`}>
             <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">About</p>
-            <h2 className="heading-lg text-foreground mb-6">Rooted in Tradition, Focused on You</h2>
+            <h2 className="heading-lg text-foreground mb-6">Meet Max (Tzeyoung) Wu, LAc</h2>
             <div className="space-y-4 body-md text-muted-foreground">
               <p>
-                With over a decade of clinical experience and a deep reverence for traditional 
-                Chinese medicine, we bring expert care to every session.
+                Max is a Licensed Acupuncturist (LAc) certified by the Virginia Board of Medicine. 
+                As a practitioner of integrative medicine, he works with each person as a whole 
+                rather than a sum of body parts.
               </p>
               <p>
-                Whether you're managing chronic pain, stress, digestive issues, or sleep quality — 
-                our personalized plans restore balance and support long-term vitality.
+                Healing is a partnership between patient and practitioner, collaborating to improve 
+                lifestyle, mindset, as well as physical health.
+              </p>
+              <p>
+                Max obtained a Master of Acupuncture degree at the Virginia University of 
+                Integrative Medicine, and also completed graduate and academic degrees from the 
+                University of Chicago, Virginia Tech, and New York University. He brings a wealth 
+                of knowledge and life experience to his practice.
+              </p>
+              <p className="text-muted-foreground/80 italic">
+                On the side, Max is a jazz musician and a martial artist — although that has all 
+                been supplanted by his family and kids.
               </p>
               <p className="text-foreground font-medium">
                 Most insurance carriers accepted.
