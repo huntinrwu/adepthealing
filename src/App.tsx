@@ -6,10 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import IntakeForm from "./pages/IntakeForm.tsx";
-import ContactPage from "./pages/ContactPage.tsx";
-import FAQ from "./pages/FAQ.tsx";
-import FairfaxCountyAcupuncture from "./pages/FairfaxCountyAcupuncture.tsx";
-import AreasWeServe from "./pages/AreasWeServe.tsx";
 import AdminLogin from "./pages/AdminLogin.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -25,14 +21,9 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/contact" element={<ContactPage />} />
             <Route path="/intake" element={<IntakeForm />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/acupuncture-fairfax-county-va" element={<FairfaxCountyAcupuncture />} />
-            <Route path="/areas-we-serve" element={<AreasWeServe />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
