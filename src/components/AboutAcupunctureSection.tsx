@@ -1,4 +1,5 @@
 import { useInView } from "@/hooks/useInView";
+import zenStonesBg from "@/assets/zen-stones-bg.jpg";
 
 const conditions = [
   "Back pain & neck pain",
@@ -15,8 +16,20 @@ const AboutAcupunctureSection = () => {
   const { ref, inView } = useInView();
 
   return (
-    <section id="acupuncture" className="section-padding bg-sage-light">
-      <div className="max-w-7xl mx-auto" ref={ref}>
+    <section id="acupuncture" className="relative section-padding overflow-hidden">
+      <div className="absolute inset-0">
+        <img
+          src={zenStonesBg}
+          alt=""
+          className="w-full h-full object-cover"
+          loading="lazy"
+          width={1920}
+          height={1080}
+        />
+        <div className="absolute inset-0 bg-sage-light/90 dark:bg-background/90" />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto" ref={ref}>
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           <div className={`transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
             <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">Services</p>
@@ -35,7 +48,7 @@ const AboutAcupunctureSection = () => {
           </div>
 
           <div className={`transition-all duration-700 delay-200 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-            <div className="bg-card rounded-2xl p-6 md:p-8 shadow-sm">
+            <div className="bg-card/95 backdrop-blur-sm rounded-2xl p-6 md:p-8 shadow-sm">
               <h3 className="font-display text-lg font-medium text-foreground mb-5">Conditions commonly treated</h3>
               <ul className="space-y-3">
                 {conditions.map((condition, index) => (
