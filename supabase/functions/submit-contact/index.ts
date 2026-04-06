@@ -11,7 +11,7 @@ const contactSchema = z.object({
   phone: z.string().trim().max(20).optional().nullable(),
   interest: z.string().min(1).max(100),
   message: z.string().trim().min(1).max(2000),
-  website: z.string().max(0, "Bot detected").optional(), // honeypot
+  website: z.string().max(0, "Bot detected").optional(),
 });
 
 Deno.serve(async (req) => {
@@ -25,16 +25,14 @@ Deno.serve(async (req) => {
 
     if (!parsed.success) {
       return new Response(
-        JSON.stringify({ error: "Validation failed", details: parsed.error.flatten().fieldErrors }),
+        JSON.stringify({ error: "Validation failed" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Reject if honeypot filled
     if (parsed.data.website) {
-      // Silently accept to not tip off bots
       return new Response(
-        JSON.stringify({ success: true, id: "ok" }),
+        JSON.stringify({ success: true }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -44,11 +42,9 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Get client IP for rate limiting
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       req.headers.get("cf-connecting-ip") || "unknown";
 
-    // Check rate limit
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { count } = await supabase
       .from("submission_rate_limits")
@@ -64,7 +60,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Record this submission for rate limiting
     await supabase.from("submission_rate_limits").insert({
       ip_address: ip,
       form_type: "contact",
@@ -80,7 +75,7 @@ Deno.serve(async (req) => {
     }).select("id").single();
 
     if (error) {
-      console.error("DB insert error:", error.message);
+      console.error("Contact submission failed:", error.code);
       return new Response(
         JSON.stringify({ error: "Failed to submit form" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -88,11 +83,10 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, id: data.id }),
+      JSON.stringify({ success: true }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (err) {
-    console.error("Unexpected error:", err);
+  } catch {
     return new Response(
       JSON.stringify({ error: "Invalid request" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }

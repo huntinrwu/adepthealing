@@ -12,6 +12,8 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   Header set X-XSS-Protection "1; mode=block"
   Header set Referrer-Policy "strict-origin-when-cross-origin"
   Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  Header set Cache-Control "no-store, no-cache" "expr=%{REQUEST_URI} =~ m#\.(html)$#"
 </IfModule>
 
 # Cache static assets

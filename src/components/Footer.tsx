@@ -44,11 +44,11 @@ const Footer = () => {
                   {link.label}
                 </a>
               ))}
-              <Link
-                to="/intake"
-                className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
-              >
+              <Link to="/intake" className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
                 Patient Intake Form
+              </Link>
+              <Link to="/privacy" className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                Privacy Policy
               </Link>
             </nav>
           </div>

@@ -22,7 +22,7 @@ const intakeSchema = z.object({
   allergies: z.string().max(500).optional().nullable(),
   previous_acupuncture: z.enum(["yes", "no"]),
   referral_source: z.string().max(200).optional().nullable(),
-  website: z.string().max(0, "Bot detected").optional(), // honeypot
+  website: z.string().max(0, "Bot detected").optional(),
 });
 
 Deno.serve(async (req) => {
@@ -36,15 +36,14 @@ Deno.serve(async (req) => {
 
     if (!parsed.success) {
       return new Response(
-        JSON.stringify({ error: "Validation failed", details: parsed.error.flatten().fieldErrors }),
+        JSON.stringify({ error: "Validation failed" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Reject if honeypot filled
     if (parsed.data.website) {
       return new Response(
-        JSON.stringify({ success: true, id: "ok" }),
+        JSON.stringify({ success: true }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -54,7 +53,6 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Rate limiting
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       req.headers.get("cf-connecting-ip") || "unknown";
 
@@ -86,7 +84,8 @@ Deno.serve(async (req) => {
     }).select("id").single();
 
     if (error) {
-      console.error("DB insert error:", error.message);
+      // Do not log PHI — only log a generic error indicator
+      console.error("Intake submission failed:", error.code);
       return new Response(
         JSON.stringify({ error: "Failed to submit form" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -94,11 +93,10 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, id: data.id }),
+      JSON.stringify({ success: true }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (err) {
-    console.error("Unexpected error:", err);
+  } catch {
     return new Response(
       JSON.stringify({ error: "Invalid request" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
