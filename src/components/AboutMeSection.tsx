@@ -29,7 +29,7 @@ const AboutMeSection = () => {
 
       <div className="relative max-w-7xl mx-auto" ref={ref}>
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-start">
-          <div className={`transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"}`}>
+          <div className={`bg-card/95 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-primary/10 transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"}`}>
             <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-4">About</p>
             <h2 className="heading-lg text-foreground mb-6">Meet Tzeyoung Max Wu, LAc</h2>
 
