@@ -24,7 +24,7 @@ const AboutMeSection = () => {
           width={1920}
           height={1080}
         />
-        <div className="absolute inset-0 bg-background/93 dark:bg-background/95" />
+        <div className="absolute inset-0 bg-background/97 dark:bg-background/98" />
       </div>
 
       <div className="relative max-w-7xl mx-auto" ref={ref}>
