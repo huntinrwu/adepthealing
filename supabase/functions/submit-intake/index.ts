@@ -6,24 +6,15 @@ import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 const MAX_SUBMISSIONS_PER_HOUR = 3;
 
 const intakeSchema = z.object({
-  first_name: z.string().trim().min(1).max(50),
-  last_name: z.string().trim().min(1).max(50),
-  email: z.string().trim().email().max(255),
-  phone: z.string().trim().min(7).max(20),
-  date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
-  gender: z.enum(["male", "female", "non-binary", "prefer-not"]),
-  address: z.string().trim().min(1).max(200),
-  emergency_contact: z.string().trim().min(1).max(100),
-  emergency_phone: z.string().trim().min(7).max(20),
-  primary_concern: z.string().trim().min(1).max(1000),
-  conditions: z.array(z.string().max(50)).max(20).optional().default([]),
-  medical_history: z.string().max(2000).optional().nullable(),
-  current_medications: z.string().max(1000).optional().nullable(),
-  allergies: z.string().max(500).optional().nullable(),
-  previous_acupuncture: z.enum(["yes", "no"]),
-  referral_source: z.string().max(200).optional().nullable(),
+  name: z.string().trim().min(1).max(100),
+  email: z.string().trim().max(255).optional().default(""),
+  phone: z.string().trim().max(20).optional().default(""),
+  description: z.string().trim().min(1).max(2000),
   website: z.string().max(0, "Bot detected").optional(),
-});
+}).refine(
+  (data) => data.email.length > 0 || data.phone.length > 0,
+  { message: "Email or phone is required" }
+);
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -76,15 +67,27 @@ Deno.serve(async (req) => {
       form_type: "intake",
     });
 
-    const { website, ...insertData } = parsed.data;
+    const nameParts = parsed.data.name.split(/\s+/);
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "-";
 
-    const { data, error } = await supabase.from("intake_submissions").insert({
-      ...insertData,
+    const { error } = await supabase.from("intake_submissions").insert({
+      first_name: firstName,
+      last_name: lastName,
+      email: parsed.data.email || "not-provided@placeholder.com",
+      phone: parsed.data.phone || "N/A",
+      date_of_birth: "1900-01-01",
+      gender: "prefer-not",
+      address: "N/A",
+      emergency_contact: "N/A",
+      emergency_phone: "N/A",
+      primary_concern: parsed.data.description,
+      conditions: [],
+      previous_acupuncture: "no",
       status: "new",
-    }).select("id").single();
+    });
 
     if (error) {
-      // Do not log PHI — only log a generic error indicator
       console.error("Intake submission failed:", error.code);
       return new Response(
         JSON.stringify({ error: "Failed to submit form" }),
