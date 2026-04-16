@@ -394,6 +394,7 @@ const AdminDashboard = () => {
     linked_inquiry: "Inquiry Linked",
     visit_added: "Visit Added",
     visit_deleted: "Visit Deleted",
+    patient_updated: "Patient Info Updated",
   };
 
   const tableLabels: Record<string, string> = {
