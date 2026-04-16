@@ -103,6 +103,8 @@ const AdminDashboard = () => {
   const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
   const [selectedContact, setSelectedContact] = useState<ContactSubmission | null>(null);
   const [selectedIntake, setSelectedIntake] = useState<IntakeSubmission | null>(null);
+  const [editIntake, setEditIntake] = useState<Partial<IntakeSubmission>>({});
+  const [savingIntake, setSavingIntake] = useState(false);
   const [editNotes, setEditNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -234,6 +236,7 @@ const AdminDashboard = () => {
 
   const openIntake = async (i: IntakeSubmission) => {
     setSelectedIntake(i);
+    setEditIntake({ ...i });
     setSelectedContact(null);
     setEditNotes(i.notes || "");
     setConfirmDelete(null);
@@ -243,6 +246,35 @@ const AdminDashboard = () => {
     if (i.status === "new") {
       await updateIntakeStatus(i.id, "pending");
     }
+  };
+
+  const saveIntakeFields = async () => {
+    if (!selectedIntake || !editIntake) return;
+    setSavingIntake(true);
+    const updates: Record<string, unknown> = {};
+    const fields: (keyof IntakeSubmission)[] = [
+      "first_name", "last_name", "email", "phone", "date_of_birth", "gender",
+      "address", "emergency_contact", "emergency_phone", "primary_concern",
+      "medical_history", "current_medications", "allergies", "previous_acupuncture",
+      "referral_source",
+    ];
+    fields.forEach(f => {
+      if (editIntake[f] !== undefined && editIntake[f] !== selectedIntake[f]) {
+        updates[f] = editIntake[f] || null;
+      }
+    });
+    if (Object.keys(updates).length > 0) {
+      await supabase.from("intake_submissions").update(updates).eq("id", selectedIntake.id);
+      await logAction("patient_updated", "intake_submissions", selectedIntake.id, { fields: Object.keys(updates) });
+      await fetchData();
+      // refresh selectedIntake
+      const refreshed = intakes.find(i => i.id === selectedIntake.id);
+      if (refreshed) {
+        setSelectedIntake({ ...refreshed, ...updates } as IntakeSubmission);
+        setEditIntake({ ...refreshed, ...updates });
+      }
+    }
+    setSavingIntake(false);
   };
 
   const addVisit = async (patientId: string) => {
@@ -362,6 +394,7 @@ const AdminDashboard = () => {
     linked_inquiry: "Inquiry Linked",
     visit_added: "Visit Added",
     visit_deleted: "Visit Deleted",
+    patient_updated: "Patient Info Updated",
   };
 
   const tableLabels: Record<string, string> = {
@@ -672,61 +705,110 @@ const AdminDashboard = () => {
                       </DialogHeader>
 
                       <div className="space-y-5 mt-2">
-                        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                          <p><span className="text-muted-foreground">Email:</span> <a href={`mailto:${selectedIntake.email}`} className="text-primary hover:underline">{selectedIntake.email}</a></p>
-                          <p><span className="text-muted-foreground">Phone:</span> <a href={`tel:${selectedIntake.phone}`} className="text-primary hover:underline">{selectedIntake.phone}</a></p>
-                          <p><span className="text-muted-foreground">DOB:</span> {selectedIntake.date_of_birth}</p>
-                          <p><span className="text-muted-foreground">Gender:</span> <span className="capitalize">{selectedIntake.gender}</span></p>
-                          <p className="sm:col-span-2"><span className="text-muted-foreground">Address:</span> {selectedIntake.address}</p>
-                        </div>
-
-                        <div className="border-t border-border pt-3">
-                          <p className="text-sm font-medium text-foreground mb-1">Emergency Contact</p>
-                          <p className="text-sm text-muted-foreground">{selectedIntake.emergency_contact} — <a href={`tel:${selectedIntake.emergency_phone}`} className="text-primary hover:underline">{selectedIntake.emergency_phone}</a></p>
-                        </div>
-
-                        <div className="border-t border-border pt-3">
-                          <p className="text-sm font-medium text-foreground mb-1">Primary Concern</p>
-                          <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">{selectedIntake.primary_concern}</p>
-                        </div>
-
-                        {selectedIntake.conditions && selectedIntake.conditions.length > 0 && (
+                        <div className="grid sm:grid-cols-2 gap-x-4 gap-y-3 text-sm">
                           <div>
-                            <p className="text-sm font-medium text-foreground mb-1.5">Conditions</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {selectedIntake.conditions.map(c => (
-                                <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>
-                              ))}
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">First Name</label>
+                            <Input value={editIntake.first_name || ""} onChange={e => setEditIntake({ ...editIntake, first_name: e.target.value })} />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Last Name</label>
+                            <Input value={editIntake.last_name || ""} onChange={e => setEditIntake({ ...editIntake, last_name: e.target.value })} />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Email</label>
+                            <Input type="email" value={editIntake.email || ""} onChange={e => setEditIntake({ ...editIntake, email: e.target.value })} />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Phone</label>
+                            <Input value={editIntake.phone || ""} onChange={e => setEditIntake({ ...editIntake, phone: e.target.value })} />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Date of Birth</label>
+                            <Input type="date" value={editIntake.date_of_birth || ""} onChange={e => setEditIntake({ ...editIntake, date_of_birth: e.target.value })} />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Gender</label>
+                            <Input value={editIntake.gender || ""} onChange={e => setEditIntake({ ...editIntake, gender: e.target.value })} />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Address</label>
+                            <Input value={editIntake.address || ""} onChange={e => setEditIntake({ ...editIntake, address: e.target.value })} />
+                          </div>
+                        </div>
+
+                        <div className="border-t border-border pt-3">
+                          <p className="text-sm font-medium text-foreground mb-2">Emergency Contact</p>
+                          <div className="grid sm:grid-cols-2 gap-x-4 gap-y-3">
+                            <div>
+                              <label className="text-xs font-medium text-muted-foreground block mb-1">Contact Name</label>
+                              <Input value={editIntake.emergency_contact || ""} onChange={e => setEditIntake({ ...editIntake, emergency_contact: e.target.value })} />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-muted-foreground block mb-1">Contact Phone</label>
+                              <Input value={editIntake.emergency_phone || ""} onChange={e => setEditIntake({ ...editIntake, emergency_phone: e.target.value })} />
                             </div>
                           </div>
-                        )}
+                        </div>
 
-                        {selectedIntake.medical_history && (
+                        <div className="border-t border-border pt-3">
+                          <label className="text-xs font-medium text-muted-foreground block mb-1">Primary Concern</label>
+                          <textarea
+                            value={editIntake.primary_concern || ""}
+                            onChange={e => setEditIntake({ ...editIntake, primary_concern: e.target.value })}
+                            className="w-full h-20 text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                          />
+                        </div>
+
+                        <div className="border-t border-border pt-3">
+                          <label className="text-xs font-medium text-muted-foreground block mb-1">Medical History</label>
+                          <textarea
+                            value={editIntake.medical_history || ""}
+                            onChange={e => setEditIntake({ ...editIntake, medical_history: e.target.value })}
+                            className="w-full h-16 text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                            placeholder="Medical history..."
+                          />
+                        </div>
+
+                        <div className="grid sm:grid-cols-2 gap-x-4 gap-y-3">
                           <div>
-                            <p className="text-sm font-medium text-foreground mb-1">Medical History</p>
-                            <p className="text-sm text-muted-foreground">{selectedIntake.medical_history}</p>
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Current Medications</label>
+                            <textarea
+                              value={editIntake.current_medications || ""}
+                              onChange={e => setEditIntake({ ...editIntake, current_medications: e.target.value })}
+                              className="w-full h-16 text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                              placeholder="Medications..."
+                            />
                           </div>
-                        )}
-
-                        {selectedIntake.current_medications && (
                           <div>
-                            <p className="text-sm font-medium text-foreground mb-1">Medications</p>
-                            <p className="text-sm text-muted-foreground">{selectedIntake.current_medications}</p>
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Allergies</label>
+                            <textarea
+                              value={editIntake.allergies || ""}
+                              onChange={e => setEditIntake({ ...editIntake, allergies: e.target.value })}
+                              className="w-full h-16 text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                              placeholder="Allergies..."
+                            />
                           </div>
-                        )}
+                        </div>
 
-                        {selectedIntake.allergies && (
+                        <div className="grid sm:grid-cols-2 gap-x-4 gap-y-3">
                           <div>
-                            <p className="text-sm font-medium text-foreground mb-1">Allergies</p>
-                            <p className="text-sm text-muted-foreground">{selectedIntake.allergies}</p>
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Previous Acupuncture</label>
+                            <Input value={editIntake.previous_acupuncture || ""} onChange={e => setEditIntake({ ...editIntake, previous_acupuncture: e.target.value })} />
                           </div>
-                        )}
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Referral Source</label>
+                            <Input value={editIntake.referral_source || ""} onChange={e => setEditIntake({ ...editIntake, referral_source: e.target.value })} />
+                          </div>
+                        </div>
 
-                        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                          <p><span className="text-muted-foreground">Previous Acupuncture:</span> {selectedIntake.previous_acupuncture}</p>
-                          {selectedIntake.referral_source && (
-                            <p><span className="text-muted-foreground">Referral:</span> {selectedIntake.referral_source}</p>
-                          )}
+                        <div>
+                          <button
+                            onClick={saveIntakeFields}
+                            disabled={savingIntake}
+                            className="text-sm bg-primary text-primary-foreground px-5 py-2 rounded-full hover:opacity-90 disabled:opacity-50 transition-opacity"
+                          >
+                            {savingIntake ? "Saving..." : "💾 Save Patient Info"}
+                          </button>
                         </div>
 
                         {/* Link Inquiry */}
