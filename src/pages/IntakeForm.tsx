@@ -28,27 +28,12 @@ const IntakeForm = () => {
     if (!validate() || submitting) return;
     setSubmitting(true);
     try {
-      const nameParts = name.trim().split(/\s+/);
-      const firstName = nameParts[0] || "";
-      const lastName = nameParts.slice(1).join(" ") || "-";
       const { data, error } = await supabase.functions.invoke("submit-intake", {
         body: {
-          first_name: firstName,
-          last_name: lastName,
-          email: email.trim() || "not-provided@placeholder.com",
-          phone: phone.trim() || "N/A",
-          date_of_birth: "1900-01-01",
-          gender: "prefer-not",
-          address: "N/A",
-          emergency_contact: "N/A",
-          emergency_phone: "N/A",
-          primary_concern: description.trim(),
-          conditions: [],
-          medical_history: null,
-          current_medications: null,
-          allergies: null,
-          previous_acupuncture: "no",
-          referral_source: null,
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          description: description.trim(),
           website: "",
         },
       });
