@@ -236,6 +236,7 @@ const AdminDashboard = () => {
 
   const openIntake = async (i: IntakeSubmission) => {
     setSelectedIntake(i);
+    setEditIntake({ ...i });
     setSelectedContact(null);
     setEditNotes(i.notes || "");
     setConfirmDelete(null);
@@ -245,6 +246,35 @@ const AdminDashboard = () => {
     if (i.status === "new") {
       await updateIntakeStatus(i.id, "pending");
     }
+  };
+
+  const saveIntakeFields = async () => {
+    if (!selectedIntake || !editIntake) return;
+    setSavingIntake(true);
+    const updates: Record<string, unknown> = {};
+    const fields: (keyof IntakeSubmission)[] = [
+      "first_name", "last_name", "email", "phone", "date_of_birth", "gender",
+      "address", "emergency_contact", "emergency_phone", "primary_concern",
+      "medical_history", "current_medications", "allergies", "previous_acupuncture",
+      "referral_source",
+    ];
+    fields.forEach(f => {
+      if (editIntake[f] !== undefined && editIntake[f] !== selectedIntake[f]) {
+        updates[f] = editIntake[f] || null;
+      }
+    });
+    if (Object.keys(updates).length > 0) {
+      await supabase.from("intake_submissions").update(updates).eq("id", selectedIntake.id);
+      await logAction("patient_updated", "intake_submissions", selectedIntake.id, { fields: Object.keys(updates) });
+      await fetchData();
+      // refresh selectedIntake
+      const refreshed = intakes.find(i => i.id === selectedIntake.id);
+      if (refreshed) {
+        setSelectedIntake({ ...refreshed, ...updates } as IntakeSubmission);
+        setEditIntake({ ...refreshed, ...updates });
+      }
+    }
+    setSavingIntake(false);
   };
 
   const addVisit = async (patientId: string) => {
