@@ -103,6 +103,8 @@ const AdminDashboard = () => {
   const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
   const [selectedContact, setSelectedContact] = useState<ContactSubmission | null>(null);
   const [selectedIntake, setSelectedIntake] = useState<IntakeSubmission | null>(null);
+  const [editIntake, setEditIntake] = useState<Partial<IntakeSubmission>>({});
+  const [savingIntake, setSavingIntake] = useState(false);
   const [editNotes, setEditNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
