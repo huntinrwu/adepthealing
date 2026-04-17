@@ -7,8 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isToday } from "date-fns";
+import { format } from "date-fns";
 
 type ContactSubmission = {
   id: string;
@@ -23,45 +22,6 @@ type ContactSubmission = {
   created_at: string;
 };
 
-type IntakeSubmission = {
-  id: string;
-  display_id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  date_of_birth: string;
-  gender: string;
-  address: string;
-  emergency_contact: string;
-  emergency_phone: string;
-  primary_concern: string;
-  conditions: string[] | null;
-  medical_history: string | null;
-  current_medications: string | null;
-  allergies: string | null;
-  previous_acupuncture: string;
-  referral_source: string | null;
-  status: string;
-  notes: string | null;
-  created_at: string;
-  linked_inquiry_id: string | null;
-};
-
-type PatientVisit = {
-  id: string;
-  patient_id: string;
-  visit_date: string;
-  visit_status: string;
-  chief_complaint: string | null;
-  treatment_notes: string | null;
-  follow_up_notes: string | null;
-  symptoms: string | null;
-  prescriptions: string | null;
-  results: string | null;
-  created_at: string;
-};
-
 type AuditEntry = {
   id: string;
   created_at: string;
@@ -72,7 +32,6 @@ type AuditEntry = {
 };
 
 const INQUIRY_STATUSES = ["new", "pending", "contacted", "scheduled"] as const;
-const PATIENT_STATUSES = ["new", "pending", "contacted", "scheduled"] as const;
 
 const statusConfig: Record<string, { label: string; color: string; dot: string }> = {
   new: { label: "New", color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300", dot: "bg-blue-500" },
@@ -91,29 +50,22 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-const buildGoogleCalendarUrl = (name: string, email: string, phone: string | null, concern: string) => {
+const buildGoogleCalendarUrl = (name: string, email: string, phone: string | null, message: string) => {
   const title = encodeURIComponent(`Adept Healing — ${name}`);
-  const details = encodeURIComponent(`Patient: ${name}\nEmail: ${email}${phone ? `\nPhone: ${phone}` : ""}\nConcern: ${concern}`);
+  const details = encodeURIComponent(`Inquirer: ${name}\nEmail: ${email}${phone ? `\nPhone: ${phone}` : ""}\nReason: ${message}`);
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}`;
 };
 
 const AdminDashboard = () => {
   const [contacts, setContacts] = useState<ContactSubmission[]>([]);
-  const [intakes, setIntakes] = useState<IntakeSubmission[]>([]);
   const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
   const [selectedContact, setSelectedContact] = useState<ContactSubmission | null>(null);
-  const [selectedIntake, setSelectedIntake] = useState<IntakeSubmission | null>(null);
-  const [editIntake, setEditIntake] = useState<Partial<IntakeSubmission>>({});
-  const [savingIntake, setSavingIntake] = useState(false);
+  const [editContact, setEditContact] = useState<Partial<ContactSubmission>>({});
+  const [savingFields, setSavingFields] = useState(false);
   const [editNotes, setEditNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [patientVisits, setPatientVisits] = useState<PatientVisit[]>([]);
-  const [selectedVisit, setSelectedVisit] = useState<PatientVisit | null>(null);
-  const [showAddVisit, setShowAddVisit] = useState(false);
-  const [visitForm, setVisitForm] = useState({ visit_date: new Date().toISOString().split("T")[0], visit_status: "completed", chief_complaint: "", treatment_notes: "", follow_up_notes: "", symptoms: "", prescriptions: "", results: "" });
-  const [savingVisit, setSavingVisit] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -121,37 +73,14 @@ const AdminDashboard = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMsg, setPasswordMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [changingPassword, setChangingPassword] = useState(false);
-  const [allVisits, setAllVisits] = useState<(PatientVisit & { patient_name?: string })[]>([]);
-  const [calendarMonth, setCalendarMonth] = useState(new Date());
-  const [calendarSelectedDay, setCalendarSelectedDay] = useState<Date | null>(null);
   const navigate = useNavigate();
 
-  const fetchAllVisits = async () => {
-    const { data: visits } = await supabase
-      .from("patient_visits")
-      .select("*")
-      .order("visit_date", { ascending: false });
-    return (visits as unknown as PatientVisit[]) || [];
-  };
-
   const fetchData = async () => {
-    const [contactRes, intakeRes, auditRes, visits] = await Promise.all([
+    const [contactRes, auditRes] = await Promise.all([
       supabase.from("contact_submissions").select("*").order("created_at", { ascending: false }),
-      supabase.from("intake_submissions").select("*").order("created_at", { ascending: false }),
       supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(200),
-      fetchAllVisits(),
     ]);
     if (contactRes.data) setContacts(contactRes.data as unknown as ContactSubmission[]);
-    if (intakeRes.data) {
-      const intakeData = intakeRes.data as unknown as IntakeSubmission[];
-      setIntakes(intakeData);
-      // Enrich visits with patient names
-      const enriched = visits.map(v => {
-        const patient = intakeData.find(p => p.id === v.patient_id);
-        return { ...v, patient_name: patient ? `${patient.first_name} ${patient.last_name}` : "Unknown" };
-      });
-      setAllVisits(enriched);
-    }
     if (auditRes.data) setAuditLog(auditRes.data as AuditEntry[]);
   };
 
@@ -182,22 +111,6 @@ const AdminDashboard = () => {
     return list;
   }, [contacts, statusFilter, search]);
 
-  const filteredIntakes = useMemo(() => {
-    let list = intakes;
-    if (statusFilter !== "all") list = list.filter(i => i.status === statusFilter);
-    if (search) {
-      const q = search.toLowerCase();
-      list = list.filter(i =>
-        `${i.first_name} ${i.last_name}`.toLowerCase().includes(q) ||
-        i.email.toLowerCase().includes(q) ||
-        i.primary_concern.toLowerCase().includes(q) ||
-        i.phone.includes(q) ||
-        String(i.display_id).includes(q)
-      );
-    }
-    return list;
-  }, [intakes, statusFilter, search]);
-
   const updateContactStatus = async (id: string, status: string) => {
     const prev = contacts.find(c => c.id === id)?.status;
     await supabase.from("contact_submissions").update({ status }).eq("id", id);
@@ -206,18 +119,9 @@ const AdminDashboard = () => {
     if (selectedContact?.id === id) setSelectedContact({ ...selectedContact, status });
   };
 
-  const updateIntakeStatus = async (id: string, status: string) => {
-    const prev = intakes.find(i => i.id === id)?.status;
-    await supabase.from("intake_submissions").update({ status }).eq("id", id);
-    await logAction("status_change", "intake_submissions", id, { from: prev, to: status });
-    fetchData();
-    if (selectedIntake?.id === id) setSelectedIntake({ ...selectedIntake, status });
-  };
-
-  // Auto-mark as "pending" when a "new" record is opened
   const openContact = async (c: ContactSubmission) => {
     setSelectedContact(c);
-    setSelectedIntake(null);
+    setEditContact({ ...c });
     setEditNotes(c.notes || "");
     setConfirmDelete(null);
     if (c.status === "new") {
@@ -225,120 +129,39 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchVisits = async (patientId: string) => {
-    const { data } = await supabase
-      .from("patient_visits")
-      .select("*")
-      .eq("patient_id", patientId)
-      .order("visit_date", { ascending: false });
-    setPatientVisits((data as unknown as PatientVisit[]) || []);
-  };
-
-  const openIntake = async (i: IntakeSubmission) => {
-    setSelectedIntake(i);
-    setEditIntake({ ...i });
-    setSelectedContact(null);
-    setEditNotes(i.notes || "");
-    setConfirmDelete(null);
-    setSelectedVisit(null);
-    setShowAddVisit(false);
-    fetchVisits(i.id);
-    if (i.status === "new") {
-      await updateIntakeStatus(i.id, "pending");
-    }
-  };
-
-  const saveIntakeFields = async () => {
-    if (!selectedIntake || !editIntake) return;
-    setSavingIntake(true);
+  const saveContactFields = async () => {
+    if (!selectedContact) return;
+    setSavingFields(true);
     const updates: Record<string, unknown> = {};
-    const fields: (keyof IntakeSubmission)[] = [
-      "first_name", "last_name", "email", "phone", "date_of_birth", "gender",
-      "address", "emergency_contact", "emergency_phone", "primary_concern",
-      "medical_history", "current_medications", "allergies", "previous_acupuncture",
-      "referral_source",
-    ];
+    const fields: (keyof ContactSubmission)[] = ["name", "email", "phone", "message"];
     fields.forEach(f => {
-      if (editIntake[f] !== undefined && editIntake[f] !== selectedIntake[f]) {
-        updates[f] = editIntake[f] || null;
+      if (editContact[f] !== undefined && editContact[f] !== selectedContact[f]) {
+        updates[f] = editContact[f] || null;
       }
     });
     if (Object.keys(updates).length > 0) {
-      await supabase.from("intake_submissions").update(updates).eq("id", selectedIntake.id);
-      await logAction("patient_updated", "intake_submissions", selectedIntake.id, { fields: Object.keys(updates) });
+      await supabase.from("contact_submissions").update(updates).eq("id", selectedContact.id);
+      await logAction("inquiry_updated", "contact_submissions", selectedContact.id, { fields: Object.keys(updates) });
       await fetchData();
-      // refresh selectedIntake
-      const refreshed = intakes.find(i => i.id === selectedIntake.id);
-      if (refreshed) {
-        setSelectedIntake({ ...refreshed, ...updates } as IntakeSubmission);
-        setEditIntake({ ...refreshed, ...updates });
-      }
+      setSelectedContact({ ...selectedContact, ...updates } as ContactSubmission);
     }
-    setSavingIntake(false);
+    setSavingFields(false);
   };
 
-  const addVisit = async (patientId: string) => {
-    setSavingVisit(true);
-    await supabase.from("patient_visits").insert({
-      patient_id: patientId,
-      visit_date: visitForm.visit_date,
-      visit_status: visitForm.visit_status,
-      chief_complaint: visitForm.chief_complaint || null,
-      treatment_notes: visitForm.treatment_notes || null,
-      follow_up_notes: visitForm.follow_up_notes || null,
-      symptoms: visitForm.symptoms || null,
-      prescriptions: visitForm.prescriptions || null,
-      results: visitForm.results || null,
-    } as never);
-    await logAction("visit_added", "patient_visits", patientId, { visit_date: visitForm.visit_date, visit_status: visitForm.visit_status });
-    setVisitForm({ visit_date: new Date().toISOString().split("T")[0], visit_status: "completed", chief_complaint: "", treatment_notes: "", follow_up_notes: "", symptoms: "", prescriptions: "", results: "" });
-    setShowAddVisit(false);
-    setSavingVisit(false);
-    fetchVisits(patientId);
-  };
-
-  const deleteVisit = async (visitId: string, patientId: string) => {
-    await supabase.from("patient_visits").delete().eq("id", visitId);
-    await logAction("visit_deleted", "patient_visits", patientId, { visit_id: visitId });
-    setSelectedVisit(null);
-    fetchVisits(patientId);
-  };
-
-  const linkInquiryToPatient = async (intakeId: string, inquiryId: string | null) => {
-    await supabase.from("intake_submissions").update({ linked_inquiry_id: inquiryId } as never).eq("id", intakeId);
-    await logAction("linked_inquiry", "intake_submissions", intakeId, { linked_inquiry_id: inquiryId });
-    fetchData();
-    if (selectedIntake?.id === intakeId) {
-      setSelectedIntake({ ...selectedIntake, linked_inquiry_id: inquiryId });
-    }
-  };
-
-  const saveNotes = async (type: "contact" | "intake", id: string) => {
+  const saveNotes = async (id: string) => {
     setSaving(true);
-    const table = type === "contact" ? "contact_submissions" : "intake_submissions";
-    await supabase.from(table).update({ notes: editNotes }).eq("id", id);
-    await logAction("notes_updated", table, id, { notes_preview: editNotes.slice(0, 100) });
+    await supabase.from("contact_submissions").update({ notes: editNotes }).eq("id", id);
+    await logAction("notes_updated", "contact_submissions", id, { notes_preview: editNotes.slice(0, 100) });
     await fetchData();
     setSaving(false);
   };
 
-  const deleteRecord = async (type: "contact" | "intake", id: string) => {
+  const deleteRecord = async (id: string) => {
     setDeleting(true);
-    const table = type === "contact" ? "contact_submissions" : "intake_submissions";
-    const record = type === "contact"
-      ? contacts.find(c => c.id === id)
-      : intakes.find(i => i.id === id);
-
-    const summary = type === "contact"
-      ? { name: (record as ContactSubmission)?.name, email: (record as ContactSubmission)?.email }
-      : { name: `${(record as IntakeSubmission)?.first_name} ${(record as IntakeSubmission)?.last_name}`, email: (record as IntakeSubmission)?.email };
-
-    await logAction("deleted", table, id, summary);
-    await supabase.from(table).delete().eq("id", id);
-
-    if (type === "contact") setSelectedContact(null);
-    else setSelectedIntake(null);
-
+    const record = contacts.find(c => c.id === id);
+    await logAction("deleted", "contact_submissions", id, { name: record?.name, email: record?.email });
+    await supabase.from("contact_submissions").delete().eq("id", id);
+    setSelectedContact(null);
     setConfirmDelete(null);
     setDeleting(false);
     fetchData();
@@ -381,59 +204,16 @@ const AdminDashboard = () => {
     return counts;
   };
 
-  const contactCounts = countByStatus(contacts);
-  const intakeCounts = countByStatus(intakes);
-  const actionNeeded = contactCounts.new + intakeCounts.new;
-  const pending = contactCounts.pending + intakeCounts.pending;
+  const counts = countByStatus(contacts);
+  const actionNeeded = counts.new;
 
   const actionLabels: Record<string, string> = {
     status_change: "Status Changed",
     notes_updated: "Notes Updated",
-    deleted: "Record Deleted",
+    deleted: "Inquiry Deleted",
     password_changed: "Password Changed",
-    linked_inquiry: "Inquiry Linked",
-    visit_added: "Visit Added",
-    visit_deleted: "Visit Deleted",
-    patient_updated: "Patient Info Updated",
+    inquiry_updated: "Inquiry Updated",
   };
-
-  const tableLabels: Record<string, string> = {
-    contact_submissions: "Inquiry",
-    intake_submissions: "Patient",
-  };
-
-  const getLinkedInquiry = (inquiryId: string | null) => {
-    if (!inquiryId) return null;
-    return contacts.find(c => c.id === inquiryId) || null;
-  };
-
-  const DeleteButton = ({ type, id, label }: { type: "contact" | "intake"; id: string; label: string }) => (
-    confirmDelete === id ? (
-      <div className="flex items-center gap-2 mt-3 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
-        <p className="text-xs text-destructive flex-1">Permanently delete <strong>{label}</strong>? This cannot be undone.</p>
-        <button
-          onClick={() => deleteRecord(type, id)}
-          disabled={deleting}
-          className="text-xs bg-destructive text-destructive-foreground px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
-        >
-          {deleting ? "Deleting..." : "Delete"}
-        </button>
-        <button
-          onClick={() => setConfirmDelete(null)}
-          className="text-xs text-muted-foreground hover:text-foreground px-2 py-1.5"
-        >
-          Cancel
-        </button>
-      </div>
-    ) : (
-      <button
-        onClick={() => setConfirmDelete(id)}
-        className="mt-3 text-xs text-destructive hover:text-destructive/80 transition-colors"
-      >
-        🗑 Delete Record
-      </button>
-    )
-  );
 
   return (
     <AdminGuard>
@@ -443,7 +223,6 @@ const AdminDashboard = () => {
       </Helmet>
 
       <div className="min-h-screen bg-muted/30">
-        {/* Header */}
         <header className="bg-background border-b border-border px-4 sm:px-6 py-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -451,7 +230,7 @@ const AdminDashboard = () => {
                 <span className="text-primary font-semibold text-base">A</span>
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-foreground">Practice Manager</h1>
+                <h1 className="text-xl font-semibold text-foreground">Inquiry Manager</h1>
                 <p className="text-xs text-muted-foreground">Adept Healing Admin</p>
               </div>
             </div>
@@ -465,13 +244,12 @@ const AdminDashboard = () => {
         </header>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             {[
-              { label: "Total", value: contacts.length + intakes.length, accent: false },
+              { label: "Total", value: contacts.length, accent: false },
               { label: "New", value: actionNeeded, accent: actionNeeded > 0 },
-              { label: "Pending", value: pending, accent: false },
-              { label: "Scheduled", value: contactCounts.scheduled + intakeCounts.scheduled, accent: false },
+              { label: "Pending", value: counts.pending, accent: false },
+              { label: "Scheduled", value: counts.scheduled, accent: false },
             ].map((stat) => (
               <div key={stat.label} className="bg-background rounded-lg p-4 shadow-sm">
                 <p className="text-xs text-muted-foreground">{stat.label}</p>
@@ -480,7 +258,6 @@ const AdminDashboard = () => {
             ))}
           </div>
 
-          {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <Input
               placeholder="Search by name, email, phone, ID..."
@@ -511,36 +288,21 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <Tabs defaultValue="contacts" className="space-y-4">
+          <Tabs defaultValue="inquiries" className="space-y-4">
             <TabsList className="bg-background">
-              <TabsTrigger value="contacts" className="gap-2">
+              <TabsTrigger value="inquiries" className="gap-2">
                 Inquiries
-                {contactCounts.new > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0">{contactCounts.new}</Badge>}
+                {counts.new > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0">{counts.new}</Badge>}
               </TabsTrigger>
-              <TabsTrigger value="intakes" className="gap-2">
-                Patients
-                {intakeCounts.new > 0 && <Badge variant="destructive" className="text-xs px-1.5 py-0">{intakeCounts.new}</Badge>}
-              </TabsTrigger>
-              <TabsTrigger value="lookup" className="gap-2">
-                🔍 Lookup
-              </TabsTrigger>
-              <TabsTrigger value="calendar" className="gap-2">
-                📅 Calendar
-              </TabsTrigger>
-              <TabsTrigger value="audit" className="gap-2">
-                Audit Log
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="gap-2">
-                Settings
-              </TabsTrigger>
+              <TabsTrigger value="audit">Audit Log</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
-            {/* CONTACTS TAB */}
-            <TabsContent value="contacts">
+            <TabsContent value="inquiries">
               <div className="space-y-2">
                 {filteredContacts.length === 0 ? (
                   <div className="bg-background rounded-lg p-8 text-center text-muted-foreground text-sm">
-                    {search || statusFilter !== "all" ? "No results match your filters." : "No contact inquiries yet."}
+                    {search || statusFilter !== "all" ? "No results match your filters." : "No inquiries yet."}
                   </div>
                 ) : (
                   filteredContacts.map(c => (
@@ -569,7 +331,6 @@ const AdminDashboard = () => {
                 )}
               </div>
 
-              {/* Contact Detail Dialog */}
               <Dialog open={!!selectedContact} onOpenChange={(open) => { if (!open) setSelectedContact(null); }}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   {selectedContact && (
@@ -582,16 +343,53 @@ const AdminDashboard = () => {
                       </DialogHeader>
 
                       <div className="space-y-5 mt-2">
-                        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                          <p><span className="text-muted-foreground">Email:</span> <a href={`mailto:${selectedContact.email}`} className="text-primary hover:underline">{selectedContact.email}</a></p>
-                          {selectedContact.phone && <p><span className="text-muted-foreground">Phone:</span> <a href={`tel:${selectedContact.phone}`} className="text-primary hover:underline">{selectedContact.phone}</a></p>}
-                          <p><span className="text-muted-foreground">Interest:</span> {selectedContact.interest}</p>
-                          <p><span className="text-muted-foreground">Submitted:</span> {format(new Date(selectedContact.created_at), "MMM d, yyyy h:mm a")}</p>
+                        <div className="grid sm:grid-cols-2 gap-x-4 gap-y-3">
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Name</label>
+                            <Input value={editContact.name || ""} onChange={e => setEditContact({ ...editContact, name: e.target.value })} />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Email</label>
+                            <Input type="email" value={editContact.email || ""} onChange={e => setEditContact({ ...editContact, email: e.target.value })} />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Phone</label>
+                            <Input value={editContact.phone || ""} onChange={e => setEditContact({ ...editContact, phone: e.target.value })} />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Submitted</label>
+                            <p className="text-sm text-foreground py-2">{format(new Date(selectedContact.created_at), "MMM d, yyyy h:mm a")}</p>
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="text-xs font-medium text-muted-foreground block mb-1">Reason for Visit</label>
+                            <textarea
+                              value={editContact.message || ""}
+                              onChange={e => setEditContact({ ...editContact, message: e.target.value })}
+                              className="w-full min-h-[100px] text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                            />
+                          </div>
                         </div>
 
-                        <div>
-                          <p className="text-sm font-medium text-foreground mb-1">Message</p>
-                          <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">{selectedContact.message}</p>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={saveContactFields}
+                            disabled={savingFields}
+                            className="text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
+                          >
+                            {savingFields ? "Saving..." : "Save Changes"}
+                          </button>
+                          <a href={`mailto:${selectedContact.email}`} className="text-sm bg-muted text-foreground px-4 py-1.5 rounded-full hover:bg-muted/80">📧 Email</a>
+                          {selectedContact.phone && (
+                            <a href={`tel:${selectedContact.phone}`} className="text-sm bg-muted text-foreground px-4 py-1.5 rounded-full hover:bg-muted/80">📞 Call</a>
+                          )}
+                          <a
+                            href={buildGoogleCalendarUrl(selectedContact.name, selectedContact.email, selectedContact.phone, selectedContact.message)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm bg-muted text-foreground px-4 py-1.5 rounded-full hover:bg-muted/80"
+                          >
+                            📅 Schedule
+                          </a>
                         </div>
 
                         <div>
@@ -613,18 +411,6 @@ const AdminDashboard = () => {
                           </div>
                         </div>
 
-                        {/* Google Calendar */}
-                        <div>
-                          <a
-                            href={buildGoogleCalendarUrl(selectedContact.name, selectedContact.email, selectedContact.phone, selectedContact.interest)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-sm bg-primary text-primary-foreground px-4 py-2 rounded-full hover:opacity-90 transition-opacity"
-                          >
-                            📅 Schedule in Google Calendar
-                          </a>
-                        </div>
-
                         <div>
                           <p className="text-sm font-medium text-foreground mb-1">Internal Notes</p>
                           <textarea
@@ -634,7 +420,7 @@ const AdminDashboard = () => {
                             placeholder="Add notes about this inquiry..."
                           />
                           <button
-                            onClick={() => saveNotes("contact", selectedContact.id)}
+                            onClick={() => saveNotes(selectedContact.id)}
                             disabled={saving}
                             className="mt-2 text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
                           >
@@ -643,7 +429,31 @@ const AdminDashboard = () => {
                         </div>
 
                         <div className="border-t border-border pt-3">
-                          <DeleteButton type="contact" id={selectedContact.id} label={selectedContact.name} />
+                          {confirmDelete === selectedContact.id ? (
+                            <div className="flex items-center gap-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+                              <p className="text-xs text-destructive flex-1">Permanently delete <strong>{selectedContact.name}</strong>? This cannot be undone.</p>
+                              <button
+                                onClick={() => deleteRecord(selectedContact.id)}
+                                disabled={deleting}
+                                className="text-xs bg-destructive text-destructive-foreground px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
+                              >
+                                {deleting ? "Deleting..." : "Delete"}
+                              </button>
+                              <button
+                                onClick={() => setConfirmDelete(null)}
+                                className="text-xs text-muted-foreground hover:text-foreground px-2 py-1.5"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmDelete(selectedContact.id)}
+                              className="text-xs text-destructive hover:text-destructive/80 transition-colors"
+                            >
+                              🗑 Delete Inquiry
+                            </button>
+                          )}
                         </div>
                       </div>
                     </>
@@ -652,719 +462,62 @@ const AdminDashboard = () => {
               </Dialog>
             </TabsContent>
 
-            {/* INTAKES TAB */}
-            <TabsContent value="intakes">
-              <div className="space-y-2">
-                {filteredIntakes.length === 0 ? (
-                  <div className="bg-background rounded-lg p-8 text-center text-muted-foreground text-sm">
-                    {search || statusFilter !== "all" ? "No results match your filters." : "No intake forms yet."}
-                  </div>
+            <TabsContent value="audit">
+              <div className="bg-background rounded-lg shadow-sm divide-y divide-border">
+                {auditLog.length === 0 ? (
+                  <div className="p-8 text-center text-muted-foreground text-sm">No activity yet.</div>
                 ) : (
-                  filteredIntakes.map(i => (
-                    <div
-                      key={i.id}
-                      onClick={() => openIntake(i)}
-                      className="bg-background rounded-lg p-4 shadow-sm cursor-pointer transition-all hover:shadow-md border-l-4 border-l-transparent hover:border-l-primary"
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono text-muted-foreground">PAT-{i.display_id}</span>
-                            <p className="font-medium text-foreground truncate">{i.first_name} {i.last_name}</p>
-                          </div>
-                          <p className="text-xs text-muted-foreground">{i.email} · {i.phone}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {i.linked_inquiry_id && (
-                            <span className="text-xs font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                              🔗 INQ-{contacts.find(c => c.id === i.linked_inquiry_id)?.display_id || "?"}
-                            </span>
-                          )}
-                        </div>
+                  auditLog.map(entry => (
+                    <div key={entry.id} className="p-4 flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground">
+                          {actionLabels[entry.action] || entry.action}
+                        </p>
+                        {entry.details && Object.keys(entry.details).length > 0 && (
+                          <p className="text-xs text-muted-foreground mt-1 truncate">
+                            {JSON.stringify(entry.details)}
+                          </p>
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{i.primary_concern}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <p className="text-xs text-muted-foreground">{format(new Date(i.created_at), "MMM d, yyyy h:mm a")}</p>
-                        {i.notes && <span className="text-xs text-muted-foreground">📝 Has notes</span>}
-                      </div>
+                      <p className="text-xs text-muted-foreground whitespace-nowrap">
+                        {format(new Date(entry.created_at), "MMM d, h:mm a")}
+                      </p>
                     </div>
                   ))
                 )}
               </div>
-
-              {/* Intake Detail Dialog */}
-              <Dialog open={!!selectedIntake} onOpenChange={(open) => { if (!open) setSelectedIntake(null); }}>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  {selectedIntake && (
-                    <>
-                      <DialogHeader>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">PAT-{selectedIntake.display_id}</span>
-                          <DialogTitle className="text-xl">{selectedIntake.first_name} {selectedIntake.last_name}</DialogTitle>
-                        </div>
-                      </DialogHeader>
-
-                      <div className="space-y-5 mt-2">
-                        <div className="grid sm:grid-cols-2 gap-x-4 gap-y-3 text-sm">
-                          <div>
-                            <label className="text-xs font-medium text-muted-foreground block mb-1">First Name</label>
-                            <Input value={editIntake.first_name || ""} onChange={e => setEditIntake({ ...editIntake, first_name: e.target.value })} />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-muted-foreground block mb-1">Last Name</label>
-                            <Input value={editIntake.last_name || ""} onChange={e => setEditIntake({ ...editIntake, last_name: e.target.value })} />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-muted-foreground block mb-1">Email</label>
-                            <Input type="email" value={editIntake.email || ""} onChange={e => setEditIntake({ ...editIntake, email: e.target.value })} />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-muted-foreground block mb-1">Phone</label>
-                            <Input value={editIntake.phone || ""} onChange={e => setEditIntake({ ...editIntake, phone: e.target.value })} />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-muted-foreground block mb-1">Date of Birth</label>
-                            <Input type="date" value={editIntake.date_of_birth || ""} onChange={e => setEditIntake({ ...editIntake, date_of_birth: e.target.value })} />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-muted-foreground block mb-1">Gender</label>
-                            <Input value={editIntake.gender || ""} onChange={e => setEditIntake({ ...editIntake, gender: e.target.value })} />
-                          </div>
-                          <div className="sm:col-span-2">
-                            <label className="text-xs font-medium text-muted-foreground block mb-1">Address</label>
-                            <Input value={editIntake.address || ""} onChange={e => setEditIntake({ ...editIntake, address: e.target.value })} />
-                          </div>
-                        </div>
-
-                        <div className="border-t border-border pt-3">
-                          <p className="text-sm font-medium text-foreground mb-2">Emergency Contact</p>
-                          <div className="grid sm:grid-cols-2 gap-x-4 gap-y-3">
-                            <div>
-                              <label className="text-xs font-medium text-muted-foreground block mb-1">Contact Name</label>
-                              <Input value={editIntake.emergency_contact || ""} onChange={e => setEditIntake({ ...editIntake, emergency_contact: e.target.value })} />
-                            </div>
-                            <div>
-                              <label className="text-xs font-medium text-muted-foreground block mb-1">Contact Phone</label>
-                              <Input value={editIntake.emergency_phone || ""} onChange={e => setEditIntake({ ...editIntake, emergency_phone: e.target.value })} />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="border-t border-border pt-3">
-                          <label className="text-xs font-medium text-muted-foreground block mb-1">Primary Concern</label>
-                          <textarea
-                            value={editIntake.primary_concern || ""}
-                            onChange={e => setEditIntake({ ...editIntake, primary_concern: e.target.value })}
-                            className="w-full h-20 text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                          />
-                        </div>
-
-                        <div className="border-t border-border pt-3">
-                          <label className="text-xs font-medium text-muted-foreground block mb-1">Medical History</label>
-                          <textarea
-                            value={editIntake.medical_history || ""}
-                            onChange={e => setEditIntake({ ...editIntake, medical_history: e.target.value })}
-                            className="w-full h-16 text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                            placeholder="Medical history..."
-                          />
-                        </div>
-
-                        <div className="grid sm:grid-cols-2 gap-x-4 gap-y-3">
-                          <div>
-                            <label className="text-xs font-medium text-muted-foreground block mb-1">Current Medications</label>
-                            <textarea
-                              value={editIntake.current_medications || ""}
-                              onChange={e => setEditIntake({ ...editIntake, current_medications: e.target.value })}
-                              className="w-full h-16 text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                              placeholder="Medications..."
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-muted-foreground block mb-1">Allergies</label>
-                            <textarea
-                              value={editIntake.allergies || ""}
-                              onChange={e => setEditIntake({ ...editIntake, allergies: e.target.value })}
-                              className="w-full h-16 text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                              placeholder="Allergies..."
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid sm:grid-cols-2 gap-x-4 gap-y-3">
-                          <div>
-                            <label className="text-xs font-medium text-muted-foreground block mb-1">Previous Acupuncture</label>
-                            <Input value={editIntake.previous_acupuncture || ""} onChange={e => setEditIntake({ ...editIntake, previous_acupuncture: e.target.value })} />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-muted-foreground block mb-1">Referral Source</label>
-                            <Input value={editIntake.referral_source || ""} onChange={e => setEditIntake({ ...editIntake, referral_source: e.target.value })} />
-                          </div>
-                        </div>
-
-                        <div>
-                          <button
-                            onClick={saveIntakeFields}
-                            disabled={savingIntake}
-                            className="text-sm bg-primary text-primary-foreground px-5 py-2 rounded-full hover:opacity-90 disabled:opacity-50 transition-opacity"
-                          >
-                            {savingIntake ? "Saving..." : "💾 Save Patient Info"}
-                          </button>
-                        </div>
-
-                        {/* Link Inquiry */}
-                        <div className="border-t border-border pt-3">
-                          <p className="text-sm font-medium text-foreground mb-2">Link to Inquiry</p>
-                          {selectedIntake.linked_inquiry_id && getLinkedInquiry(selectedIntake.linked_inquiry_id) ? (
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-primary font-mono">INQ-{getLinkedInquiry(selectedIntake.linked_inquiry_id)!.display_id}</span>
-                              <span className="text-sm text-muted-foreground">— {getLinkedInquiry(selectedIntake.linked_inquiry_id)!.name}</span>
-                              <button
-                                onClick={() => linkInquiryToPatient(selectedIntake.id, null)}
-                                className="text-xs text-destructive hover:text-destructive/80 ml-2"
-                              >
-                                Unlink
-                              </button>
-                            </div>
-                          ) : (
-                            <Select onValueChange={(val) => linkInquiryToPatient(selectedIntake.id, val)}>
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select an inquiry to link..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {contacts.map(c => (
-                                  <SelectItem key={c.id} value={c.id}>
-                                    INQ-{c.display_id} — {c.name} ({c.email})
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          )}
-                        </div>
-
-
-                        {/* Google Calendar */}
-                        <div>
-                          <a
-                            href={buildGoogleCalendarUrl(
-                              `${selectedIntake.first_name} ${selectedIntake.last_name}`,
-                              selectedIntake.email,
-                              selectedIntake.phone,
-                              selectedIntake.primary_concern
-                            )}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-sm bg-primary text-primary-foreground px-4 py-2 rounded-full hover:opacity-90 transition-opacity"
-                          >
-                            📅 Schedule in Google Calendar
-                          </a>
-                        </div>
-
-                        {/* Visit History */}
-                        <div className="border-t border-border pt-3">
-                          <div className="flex items-center justify-between mb-3">
-                            <p className="text-sm font-medium text-foreground">Visit History ({patientVisits.length})</p>
-                            <button
-                              onClick={() => { setShowAddVisit(!showAddVisit); setSelectedVisit(null); }}
-                              className="text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-full hover:opacity-90 transition-opacity"
-                            >
-                              {showAddVisit ? "Cancel" : "+ Add Visit"}
-                            </button>
-                          </div>
-
-                          {showAddVisit && (
-                            <div className="bg-muted/50 rounded-lg p-4 mb-3 space-y-3">
-                              <div className="grid sm:grid-cols-2 gap-3">
-                                <div>
-                                  <label className="text-xs font-medium text-foreground block mb-1">Visit Date</label>
-                                  <Input type="date" value={visitForm.visit_date} onChange={e => setVisitForm({ ...visitForm, visit_date: e.target.value })} />
-                                </div>
-                                <div>
-                                  <label className="text-xs font-medium text-foreground block mb-1">Status</label>
-                                  <div className="flex gap-1.5">
-                                    {[
-                                      { value: "completed", label: "✅ Completed", activeClass: "bg-green-600 text-white" },
-                                      { value: "no-show", label: "❌ No-Show", activeClass: "bg-red-600 text-white" },
-                                      { value: "cancelled", label: "🚫 Cancelled", activeClass: "bg-amber-600 text-white" },
-                                    ].map(s => (
-                                      <button
-                                        key={s.value}
-                                        type="button"
-                                        onClick={() => setVisitForm({ ...visitForm, visit_status: s.value })}
-                                        className={`text-xs px-2.5 py-1.5 rounded-full border transition-all ${visitForm.visit_status === s.value ? s.activeClass + " border-transparent" : "border-input bg-background text-muted-foreground hover:bg-muted"}`}
-                                      >
-                                        {s.label}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {visitForm.visit_status === "completed" && (
-                                <>
-                                  <div>
-                                    <label className="text-xs font-medium text-foreground block mb-1">Chief Complaint</label>
-                                    <textarea value={visitForm.chief_complaint} onChange={e => setVisitForm({ ...visitForm, chief_complaint: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="What brought the patient in today..." />
-                                  </div>
-                                  <div>
-                                    <label className="text-xs font-medium text-foreground block mb-1">Symptoms Treated</label>
-                                    <textarea value={visitForm.symptoms} onChange={e => setVisitForm({ ...visitForm, symptoms: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="e.g. lower back pain, insomnia, anxiety..." />
-                                  </div>
-                                  <div>
-                                    <label className="text-xs font-medium text-foreground block mb-1">Treatment Notes</label>
-                                    <textarea value={visitForm.treatment_notes} onChange={e => setVisitForm({ ...visitForm, treatment_notes: e.target.value })} className="w-full h-20 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Points used, techniques, observations..." />
-                                  </div>
-                                  <div>
-                                    <label className="text-xs font-medium text-foreground block mb-1">Prescriptions / Herbs</label>
-                                    <textarea value={visitForm.prescriptions} onChange={e => setVisitForm({ ...visitForm, prescriptions: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Herbal formulas, supplements, lifestyle recommendations..." />
-                                  </div>
-                                  <div>
-                                    <label className="text-xs font-medium text-foreground block mb-1">Results / Response</label>
-                                    <textarea value={visitForm.results} onChange={e => setVisitForm({ ...visitForm, results: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Patient response to treatment, improvements noted..." />
-                                  </div>
-                                  <div>
-                                    <label className="text-xs font-medium text-foreground block mb-1">Follow-up Notes</label>
-                                    <textarea value={visitForm.follow_up_notes} onChange={e => setVisitForm({ ...visitForm, follow_up_notes: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Recommendations, next visit plan..." />
-                                  </div>
-                                </>
-                              )}
-
-                              {visitForm.visit_status !== "completed" && (
-                                <div>
-                                  <label className="text-xs font-medium text-foreground block mb-1">Notes (optional)</label>
-                                  <textarea value={visitForm.follow_up_notes} onChange={e => setVisitForm({ ...visitForm, follow_up_notes: e.target.value })} className="w-full h-16 text-sm border border-input rounded-lg p-2 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Any notes about this no-show or cancellation..." />
-                                </div>
-                              )}
-
-                              <button onClick={() => addVisit(selectedIntake.id)} disabled={savingVisit} className="text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50">
-                                {savingVisit ? "Saving..." : "Save Visit"}
-                              </button>
-                            </div>
-                          )}
-
-                          {selectedVisit ? (
-                            <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <p className="text-sm font-medium text-foreground">{format(new Date(selectedVisit.visit_date + "T00:00:00"), "MMMM d, yyyy")}</p>
-                                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                                    selectedVisit.visit_status === "completed" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" :
-                                    selectedVisit.visit_status === "no-show" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" :
-                                    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
-                                  }`}>
-                                    {selectedVisit.visit_status === "completed" ? "✅ Completed" : selectedVisit.visit_status === "no-show" ? "❌ No-Show" : "🚫 Cancelled"}
-                                  </span>
-                                </div>
-                                <button onClick={() => setSelectedVisit(null)} className="text-xs text-muted-foreground hover:text-foreground">← Back</button>
-                              </div>
-                              {selectedVisit.chief_complaint && (
-                                <div>
-                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Chief Complaint</p>
-                                  <p className="text-sm text-foreground">{selectedVisit.chief_complaint}</p>
-                                </div>
-                              )}
-                              {selectedVisit.symptoms && (
-                                <div>
-                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Symptoms Treated</p>
-                                  <p className="text-sm text-foreground">{selectedVisit.symptoms}</p>
-                                </div>
-                              )}
-                              {selectedVisit.treatment_notes && (
-                                <div>
-                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Treatment Notes</p>
-                                  <p className="text-sm text-foreground whitespace-pre-wrap">{selectedVisit.treatment_notes}</p>
-                                </div>
-                              )}
-                              {selectedVisit.prescriptions && (
-                                <div>
-                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Prescriptions / Herbs</p>
-                                  <p className="text-sm text-foreground whitespace-pre-wrap">{selectedVisit.prescriptions}</p>
-                                </div>
-                              )}
-                              {selectedVisit.results && (
-                                <div>
-                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Results / Response</p>
-                                  <p className="text-sm text-foreground whitespace-pre-wrap">{selectedVisit.results}</p>
-                                </div>
-                              )}
-                              {selectedVisit.follow_up_notes && (
-                                <div>
-                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Follow-up</p>
-                                  <p className="text-sm text-foreground">{selectedVisit.follow_up_notes}</p>
-                                </div>
-                              )}
-                              <button onClick={() => deleteVisit(selectedVisit.id, selectedIntake.id)} className="text-xs text-destructive hover:text-destructive/80">🗑 Delete Visit</button>
-                            </div>
-                          ) : (
-                            patientVisits.length === 0 ? (
-                              <p className="text-sm text-muted-foreground">No visits recorded yet.</p>
-                            ) : (
-                              <div className="space-y-1.5">
-                                {patientVisits.map(v => (
-                                  <div
-                                    key={v.id}
-                                    onClick={() => { setSelectedVisit(v); setShowAddVisit(false); }}
-                                    className="flex items-center justify-between bg-background rounded-lg p-3 cursor-pointer hover:bg-muted/50 transition-colors border border-border"
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <span className={`w-2 h-2 rounded-full shrink-0 ${
-                                        v.visit_status === "completed" ? "bg-green-500" :
-                                        v.visit_status === "no-show" ? "bg-red-500" : "bg-amber-500"
-                                      }`} />
-                                      <div>
-                                        <p className="text-sm font-medium text-foreground">{format(new Date(v.visit_date + "T00:00:00"), "MMM d, yyyy")}</p>
-                                        {v.chief_complaint && <p className="text-xs text-muted-foreground line-clamp-1">{v.chief_complaint}</p>}
-                                      </div>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground">→</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )
-                          )}
-                          <textarea
-                            value={editNotes}
-                            onChange={(e) => setEditNotes(e.target.value)}
-                            className="w-full h-28 text-sm border border-input rounded-lg p-2.5 bg-background resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                            placeholder="Add notes about this patient..."
-                          />
-                          <button
-                            onClick={() => saveNotes("intake", selectedIntake.id)}
-                            disabled={saving}
-                            className="mt-2 text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
-                          >
-                            {saving ? "Saving..." : "Save Notes"}
-                          </button>
-                        </div>
-
-                        <div className="border-t border-border pt-3">
-                          <DeleteButton type="intake" id={selectedIntake.id} label={`${selectedIntake.first_name} ${selectedIntake.last_name}`} />
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </DialogContent>
-              </Dialog>
             </TabsContent>
 
-            {/* LOOKUP TAB */}
-            <TabsContent value="lookup">
-              {(() => {
-                const [lookupQuery, setLookupQuery] = [search, setSearch];
-                const q = lookupQuery.trim().toLowerCase();
-
-                const matchedContacts = q ? contacts.filter(c =>
-                  c.name.toLowerCase().includes(q) ||
-                  c.email.toLowerCase().includes(q) ||
-                  (c.phone && c.phone.includes(q)) ||
-                  `inq-${c.display_id}`.includes(q) ||
-                  String(c.display_id) === q
-                ) : [];
-
-                const matchedIntakes = q ? intakes.filter(i =>
-                  `${i.first_name} ${i.last_name}`.toLowerCase().includes(q) ||
-                  i.email.toLowerCase().includes(q) ||
-                  i.phone.includes(q) ||
-                  `pat-${i.display_id}`.includes(q) ||
-                  String(i.display_id) === q
-                ) : [];
-
-                const totalResults = matchedContacts.length + matchedIntakes.length;
-
-                return (
-                  <div className="space-y-4">
-                    <div className="bg-background rounded-lg shadow-sm p-6">
-                      <h2 className="text-lg font-semibold text-foreground mb-1">Customer Lookup</h2>
-                      <p className="text-sm text-muted-foreground mb-4">Search by INQ-ID, PAT-ID, name, phone, or email.</p>
-                      <Input
-                        placeholder="e.g. INQ-5, PAT-12, John, 703-555-1234, john@email.com"
-                        value={lookupQuery}
-                        onChange={(e) => setLookupQuery(e.target.value)}
-                        className="text-base"
-                        autoFocus
-                      />
-                      {q && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {totalResults} result{totalResults !== 1 ? "s" : ""} found
-                        </p>
-                      )}
-                    </div>
-
-                    {q && matchedContacts.length > 0 && (
-                      <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2 px-1">Inquiries ({matchedContacts.length})</h3>
-                        <div className="space-y-2">
-                          {matchedContacts.map(c => (
-                            <div
-                              key={c.id}
-                              onClick={() => openContact(c)}
-                              className="bg-background rounded-lg p-4 shadow-sm cursor-pointer transition-all hover:shadow-md border-l-4 border-l-transparent hover:border-l-primary"
-                            >
-                              <div className="flex items-start justify-between gap-2 mb-1">
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs font-mono text-muted-foreground">INQ-{c.display_id}</span>
-                                    <p className="font-medium text-foreground truncate">{c.name}</p>
-                                  </div>
-                                  <p className="text-xs text-muted-foreground">{c.email}{c.phone ? ` · ${c.phone}` : ""}</p>
-                                </div>
-                                <StatusBadge status={c.status} />
-                              </div>
-                              <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{c.message}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {q && matchedIntakes.length > 0 && (
-                      <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2 px-1">Patients ({matchedIntakes.length})</h3>
-                        <div className="space-y-2">
-                          {matchedIntakes.map(i => (
-                            <div
-                              key={i.id}
-                              onClick={() => openIntake(i)}
-                              className="bg-background rounded-lg p-4 shadow-sm cursor-pointer transition-all hover:shadow-md border-l-4 border-l-transparent hover:border-l-primary"
-                            >
-                              <div className="flex items-start justify-between gap-2 mb-1">
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs font-mono text-muted-foreground">PAT-{i.display_id}</span>
-                                    <p className="font-medium text-foreground truncate">{i.first_name} {i.last_name}</p>
-                                  </div>
-                                  <p className="text-xs text-muted-foreground">{i.email} · {i.phone}</p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {i.linked_inquiry_id && (
-                                    <span className="text-xs font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                                      🔗 INQ-{contacts.find(c => c.id === i.linked_inquiry_id)?.display_id || "?"}
-                                    </span>
-                                  )}
-                                  <StatusBadge status={i.status} />
-                                </div>
-                              </div>
-                              <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{i.primary_concern}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {q && totalResults === 0 && (
-                      <div className="bg-background rounded-lg p-8 text-center text-muted-foreground text-sm">
-                        No inquiries or patients match "<strong>{q}</strong>".
-                      </div>
-                    )}
-
-                    {!q && (
-                      <div className="bg-background rounded-lg p-8 text-center text-muted-foreground text-sm">
-                        Start typing to search across all inquiries and patients.
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-            </TabsContent>
-
-            {/* CALENDAR TAB */}
-            <TabsContent value="calendar">
-              <div className="bg-background rounded-lg shadow-sm p-4 sm:p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <button
-                    onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
-                    className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-full hover:bg-muted transition-colors"
-                  >
-                    ← Prev
-                  </button>
-                  <h2 className="text-lg font-semibold text-foreground">
-                    {format(calendarMonth, "MMMM yyyy")}
-                  </h2>
-                  <button
-                    onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
-                    className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-full hover:bg-muted transition-colors"
-                  >
-                    Next →
-                  </button>
-                </div>
-
-                {/* Day headers */}
-                <div className="grid grid-cols-7 text-center text-xs font-medium text-muted-foreground mb-2">
-                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => (
-                    <div key={d} className="py-2">{d}</div>
-                  ))}
-                </div>
-
-                {/* Calendar grid */}
-                {(() => {
-                  const monthStart = startOfMonth(calendarMonth);
-                  const monthEnd = endOfMonth(calendarMonth);
-                  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
-                  const startPad = getDay(monthStart);
-
-                  return (
-                    <div className="grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden">
-                      {/* Padding for days before month starts */}
-                      {Array.from({ length: startPad }).map((_, i) => (
-                        <div key={`pad-${i}`} className="bg-muted/30 min-h-[80px] sm:min-h-[100px]" />
-                      ))}
-                      {days.map(day => {
-                        const dateStr = format(day, "yyyy-MM-dd");
-                        const dayVisits = allVisits.filter(v => v.visit_date === dateStr);
-                        const isSelected = calendarSelectedDay && isSameDay(day, calendarSelectedDay);
-
-                        return (
-                          <div
-                            key={dateStr}
-                            onClick={() => setCalendarSelectedDay(isSelected ? null : day)}
-                            className={`bg-background min-h-[80px] sm:min-h-[100px] p-1.5 cursor-pointer transition-colors hover:bg-muted/50 ${
-                              isSelected ? "ring-2 ring-primary ring-inset" : ""
-                            }`}
-                          >
-                            <span className={`text-xs font-medium inline-flex items-center justify-center w-6 h-6 rounded-full ${
-                              isToday(day) ? "bg-primary text-primary-foreground" : "text-foreground"
-                            }`}>
-                              {format(day, "d")}
-                            </span>
-                            {dayVisits.length > 0 && (
-                              <div className="mt-1 space-y-0.5">
-                                {dayVisits.slice(0, 3).map(v => (
-                                  <div key={v.id} className="text-[10px] leading-tight bg-primary/10 text-primary rounded px-1 py-0.5 truncate">
-                                    {v.patient_name}
-                                  </div>
-                                ))}
-                                {dayVisits.length > 3 && (
-                                  <div className="text-[10px] text-muted-foreground">+{dayVisits.length - 3} more</div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-
-                {/* Selected day detail */}
-                {calendarSelectedDay && (() => {
-                  const dateStr = format(calendarSelectedDay, "yyyy-MM-dd");
-                  const dayVisits = allVisits.filter(v => v.visit_date === dateStr);
-                  return (
-                    <div className="mt-6">
-                      <h3 className="text-sm font-semibold text-foreground mb-3">
-                        {format(calendarSelectedDay, "EEEE, MMMM d, yyyy")} — {dayVisits.length} visit{dayVisits.length !== 1 ? "s" : ""}
-                      </h3>
-                      {dayVisits.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">No visits scheduled for this day.</p>
-                      ) : (
-                        <div className="space-y-2">
-                          {dayVisits.map(v => {
-                            const patient = intakes.find(p => p.id === v.patient_id);
-                            return (
-                              <div
-                                key={v.id}
-                                className="bg-muted/50 rounded-lg p-4 border border-border cursor-pointer hover:bg-muted transition-colors"
-                                onClick={() => patient && openIntake(patient)}
-                              >
-                                <div className="flex items-center justify-between mb-1">
-                                  <div className="flex items-center gap-2">
-                                    {patient && <span className="text-xs font-mono text-muted-foreground">PAT-{patient.display_id}</span>}
-                                    <p className="text-sm font-medium text-foreground">{v.patient_name}</p>
-                                  </div>
-                                  <span className="text-xs text-primary">View patient →</span>
-                                </div>
-                                {v.chief_complaint && <p className="text-xs text-muted-foreground line-clamp-1">{v.chief_complaint}</p>}
-                                {v.treatment_notes && <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">Treatment: {v.treatment_notes}</p>}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-            </TabsContent>
-
-            {/* AUDIT LOG TAB */}
-            <TabsContent value="audit">
-              <div className="space-y-2">
-                {auditLog.length === 0 ? (
-                  <div className="bg-background rounded-lg p-8 text-center text-muted-foreground text-sm">
-                    No activity logged yet. Actions will appear here as you manage records.
-                  </div>
-                ) : (
-                  auditLog.map(entry => {
-                    const details = entry.details || {};
-                    return (
-                      <div key={entry.id} className="bg-background rounded-lg p-4 shadow-sm flex items-start gap-4">
-                        <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                          entry.action === "deleted" ? "bg-destructive" :
-                          entry.action === "status_change" ? "bg-primary" : "bg-amber-500"
-                        }`} />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-medium text-foreground">{actionLabels[entry.action] || entry.action}</span>
-                            <span className="text-xs text-muted-foreground">•</span>
-                            <span className="text-xs text-muted-foreground">{tableLabels[entry.target_table] || entry.target_table}</span>
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            {entry.action === "status_change" && (
-                              <span>
-                                {statusConfig[(details as Record<string, string>).from]?.label || (details as Record<string, string>).from} → {statusConfig[(details as Record<string, string>).to]?.label || (details as Record<string, string>).to}
-                              </span>
-                            )}
-                            {entry.action === "deleted" && (
-                              <span>{(details as Record<string, string>).name} ({(details as Record<string, string>).email})</span>
-                            )}
-                            {entry.action === "notes_updated" && (
-                              <span className="line-clamp-1">{(details as Record<string, string>).notes_preview}</span>
-                            )}
-                          </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground flex-shrink-0">
-                          {format(new Date(entry.created_at), "MMM d, yyyy h:mm a")}
-                        </p>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </TabsContent>
-
-            {/* SETTINGS TAB */}
             <TabsContent value="settings">
-              <div className="max-w-md">
-                <div className="bg-background rounded-lg shadow-sm p-6">
-                  <h2 className="text-lg font-semibold text-foreground mb-1">Change Password</h2>
-                  <p className="text-sm text-muted-foreground mb-5">Update your admin account password.</p>
+              <div className="bg-background rounded-lg shadow-sm p-6 max-w-md">
+                <h3 className="text-base font-semibold text-foreground mb-4">Change Password</h3>
+                <form onSubmit={handlePasswordChange} className="space-y-3">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground block mb-1">Current Password</label>
+                    <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground block mb-1">New Password</label>
+                    <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                    <p className="text-xs text-muted-foreground mt-1">12+ chars, with uppercase, lowercase, number, symbol.</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground block mb-1">Confirm New Password</label>
+                    <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+                  </div>
                   {passwordMsg && (
-                    <div className={`text-sm p-3 rounded-lg mb-4 ${passwordMsg.type === "success" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" : "bg-destructive/10 text-destructive"}`}>
+                    <p className={`text-xs ${passwordMsg.type === "error" ? "text-destructive" : "text-green-600"}`}>
                       {passwordMsg.text}
-                    </div>
+                    </p>
                   )}
-                  <form onSubmit={handlePasswordChange} className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-foreground block mb-1">Current Password</label>
-                      <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground block mb-1">New Password</label>
-                      <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={12} />
-                      <p className="text-xs text-muted-foreground mt-1">Min 12 chars · uppercase · lowercase · number · symbol</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground block mb-1">Confirm New Password</label>
-                      <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={changingPassword}
-                      className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
-                    >
-                      {changingPassword ? "Updating..." : "Update Password"}
-                    </button>
-                  </form>
-                </div>
+                  <button
+                    type="submit"
+                    disabled={changingPassword}
+                    className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-full hover:opacity-90 disabled:opacity-50"
+                  >
+                    {changingPassword ? "Updating..." : "Update Password"}
+                  </button>
+                </form>
               </div>
             </TabsContent>
           </Tabs>
