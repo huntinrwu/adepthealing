@@ -11,14 +11,15 @@ const IntakeForm = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [description, setDescription] = useState("");
+  const [message, setMessage] = useState("");
+  const [website, setWebsite] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = "Name is required";
     if (!email.trim() && !phone.trim()) e.contact = "Email or phone number is required";
-    if (!description.trim()) e.description = "Please describe your reason for visiting";
+    if (!message.trim()) e.message = "Please describe your reason for visiting";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -28,13 +29,13 @@ const IntakeForm = () => {
     if (!validate() || submitting) return;
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("submit-intake", {
+      const { data, error } = await supabase.functions.invoke("submit-inquiry", {
         body: {
           name: name.trim(),
           email: email.trim(),
           phone: phone.trim(),
-          description: description.trim(),
-          website: "",
+          message: message.trim(),
+          website,
         },
       });
       if (error) throw error;
@@ -42,7 +43,7 @@ const IntakeForm = () => {
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
-      // Generic error — no PHI logged
+      // Generic error
     } finally {
       setSubmitting(false);
     }
@@ -57,7 +58,7 @@ const IntakeForm = () => {
             <CheckCircle className="w-16 h-16 text-primary mx-auto mb-6" />
             <h1 className="heading-lg text-foreground mb-4">Thank You!</h1>
             <p className="body-lg text-muted-foreground mb-8">
-              Your information has been received. We'll be in touch shortly to schedule your appointment.
+              Your message has been received. We'll be in touch shortly to schedule your appointment.
             </p>
             <a href="/" className="bg-primary text-primary-foreground px-8 py-3 rounded-full font-medium hover:opacity-90 transition-opacity">
               Back to Home
@@ -74,8 +75,8 @@ const IntakeForm = () => {
   return (
     <>
       <Helmet>
-        <title>Patient Intake Form | Adept Healing Acupuncture | Herndon VA</title>
-        <meta name="description" content="Complete the patient intake form for Adept Healing acupuncture to get started." />
+        <title>Get in Touch | Adept Healing Acupuncture | Herndon VA</title>
+        <meta name="description" content="Reach out to Adept Healing acupuncture to schedule an appointment or ask a question." />
         <link rel="canonical" href="https://adepthealing.com/intake" />
       </Helmet>
       <Navbar />
@@ -84,9 +85,9 @@ const IntakeForm = () => {
           <div className="max-w-xl mx-auto">
             <div className="text-center mb-8 animate-fade-in">
               <p className="text-primary font-body text-sm tracking-[0.25em] uppercase mb-3">Welcome</p>
-              <h1 className="heading-lg text-foreground mb-3">Patient Intake Form</h1>
+              <h1 className="heading-lg text-foreground mb-3">Get in Touch</h1>
               <p className="body-md text-muted-foreground">
-                Fill out the basics and we'll reach out to schedule your visit.
+                Send a message and we'll get back to you to schedule your visit.
               </p>
             </div>
 
@@ -109,15 +110,20 @@ const IntakeForm = () => {
               </div>
 
               <div>
-                <label htmlFor="description" className="text-sm font-medium text-foreground">Reason for Visit *</label>
+                <label htmlFor="message" className="text-sm font-medium text-foreground">Reason for Visit *</label>
                 <textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  id="message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                   className="mt-1 w-full min-h-[100px] rounded-lg border border-input bg-background px-4 py-3 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   placeholder="Briefly describe what brings you in..."
                 />
-                {errors.description && <p className="text-destructive text-sm mt-1">{errors.description}</p>}
+                {errors.message && <p className="text-destructive text-sm mt-1">{errors.message}</p>}
+              </div>
+
+              <div className="absolute -left-[9999px]" aria-hidden="true">
+                <label htmlFor="website">Website</label>
+                <input id="website" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
               </div>
 
               <div className="pt-2 text-center">
