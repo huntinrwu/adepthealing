@@ -29,8 +29,8 @@ const ContactFormSection = () => {
     if (submitting) return;
     setSubmitting(true);
     try {
-      const { error } = await supabase.functions.invoke("submit-contact", {
-        body: { name: data.name, email: data.email, phone: data.phone || null, interest: "general", message: data.message, website: data.website || "" },
+      const { error } = await supabase.functions.invoke("submit-inquiry", {
+        body: { name: data.name, email: data.email, phone: data.phone || "", message: data.message, website: data.website || "" },
       });
       if (error) throw error;
       setSubmitted(true);
