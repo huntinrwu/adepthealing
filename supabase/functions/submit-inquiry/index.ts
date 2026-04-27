@@ -39,19 +39,21 @@ function buildRawEmail(opts: {
   to: string;
   from: string;
   subject: string;
-  html: string;
+  body: string;
+  contentType?: "text/html" | "text/plain";
   replyTo?: string;
 }): string {
+  const contentType = opts.contentType ?? "text/html";
   const headers = [
     `From: ${opts.from}`,
     `To: ${opts.to}`,
     `Subject: ${opts.subject}`,
     "MIME-Version: 1.0",
-    'Content-Type: text/html; charset="UTF-8"',
+    `Content-Type: ${contentType}; charset="UTF-8"`,
     "Content-Transfer-Encoding: 7bit",
   ];
   if (opts.replyTo) headers.push(`Reply-To: ${opts.replyTo}`);
-  const message = headers.join("\r\n") + "\r\n\r\n" + opts.html;
+  const message = headers.join("\r\n") + "\r\n\r\n" + opts.body;
   return toBase64Url(message);
 }
 
