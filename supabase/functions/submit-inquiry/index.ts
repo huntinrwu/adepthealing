@@ -133,6 +133,43 @@ Deno.serve(async (req) => {
       } else {
         console.error("Email keys missing — notification not sent");
       }
+
+      // Send confirmation email to the inquirer (best-effort)
+      if (LOVABLE_API_KEY && RESEND_API_KEY && parsed.data.email && parsed.data.email.length > 0) {
+        const confirmationHtml = `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
+            <h2 style="color: #2d5016;">Thank you for reaching out, ${escapeHtml(parsed.data.name)}!</h2>
+            <p>I've received your message and will get back to you as soon as possible — typically within 1–2 business days.</p>
+            <p><strong>Here's a copy of what you sent:</strong></p>
+            <div style="background:#f6f6f1;border-left:3px solid #2d5016;padding:12px 16px;margin:16px 0;border-radius:4px;">
+              ${escapeHtml(parsed.data.message)}
+            </div>
+            <p>If your matter is urgent, feel free to reply directly to this email.</p>
+            <p style="margin-top:24px;">Warmly,<br/>Max<br/><em>Adept Healing</em></p>
+            <hr style="border:none;border-top:1px solid #e5e5e5;margin:24px 0;"/>
+            <p style="color:#888;font-size:12px;">This is an automated confirmation. Please don't share sensitive medical details by email.</p>
+          </div>
+        `;
+        const confirmRes = await fetch(`${GATEWAY_URL}/emails`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+            "X-Connection-Api-Key": RESEND_API_KEY,
+          },
+          body: JSON.stringify({
+            from: "Adept Healing <onboarding@resend.dev>",
+            to: [parsed.data.email],
+            subject: "We received your message — Adept Healing",
+            html: confirmationHtml,
+            reply_to: NOTIFY_EMAIL,
+          }),
+        });
+        if (!confirmRes.ok) {
+          const errText = await confirmRes.text();
+          console.error("Confirmation email failed:", confirmRes.status, errText);
+        }
+      }
     } catch (emailErr) {
       console.error("Email send error:", emailErr instanceof Error ? emailErr.message : emailErr);
     }
