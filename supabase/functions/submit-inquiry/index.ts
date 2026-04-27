@@ -39,19 +39,21 @@ function buildRawEmail(opts: {
   to: string;
   from: string;
   subject: string;
-  html: string;
+  body: string;
+  contentType?: "text/html" | "text/plain";
   replyTo?: string;
 }): string {
+  const contentType = opts.contentType ?? "text/html";
   const headers = [
     `From: ${opts.from}`,
     `To: ${opts.to}`,
     `Subject: ${opts.subject}`,
     "MIME-Version: 1.0",
-    'Content-Type: text/html; charset="UTF-8"',
+    `Content-Type: ${contentType}; charset="UTF-8"`,
     "Content-Transfer-Encoding: 7bit",
   ];
   if (opts.replyTo) headers.push(`Reply-To: ${opts.replyTo}`);
-  const message = headers.join("\r\n") + "\r\n\r\n" + opts.html;
+  const message = headers.join("\r\n") + "\r\n\r\n" + opts.body;
   return toBase64Url(message);
 }
 
@@ -148,24 +150,32 @@ Deno.serve(async (req) => {
       const fromAddress = `${FROM_NAME} <${NOTIFY_EMAIL}>`;
       const displayId = inserted?.display_id;
 
-      // 1. Notification email to Max (sent from his own Gmail to himself)
+      // 1. Notification email to Max — plain text, easy to read & reply from Gmail
       try {
-        const notifyHtml = `
-          <h2>New Inquiry${displayId ? ` (INQ-${displayId})` : ""}</h2>
-          <p><strong>Name:</strong> ${escapeHtml(parsed.data.name)}</p>
-          <p><strong>Email:</strong> ${parsed.data.email ? escapeHtml(parsed.data.email) : "<em>not provided</em>"}</p>
-          <p><strong>Phone:</strong> ${parsed.data.phone ? escapeHtml(parsed.data.phone) : "<em>not provided</em>"}</p>
-          <p><strong>Reason for visit:</strong></p>
-          <p>${escapeHtml(parsed.data.message)}</p>
-          <hr/>
-          <p style="color:#888;font-size:12px;">Reply directly to this email to respond to ${escapeHtml(parsed.data.name)}.</p>
-        `;
         const replyTo = parsed.data.email && parsed.data.email.length > 0 ? parsed.data.email : undefined;
+        const subjectTag = displayId ? `[INQ-${displayId}] ` : "";
+        const notifyText = [
+          `New inquiry from ${parsed.data.name}`,
+          ``,
+          `Name:    ${parsed.data.name}`,
+          `Email:   ${parsed.data.email || "(not provided)"}`,
+          `Phone:   ${parsed.data.phone || "(not provided)"}`,
+          ``,
+          `Message:`,
+          parsed.data.message,
+          ``,
+          `--`,
+          replyTo
+            ? `Just hit Reply to respond to ${parsed.data.name} directly.`
+            : `No email provided — reach out by phone.`,
+        ].join("\n");
+
         const rawNotify = buildRawEmail({
           to: NOTIFY_EMAIL,
           from: fromAddress,
-          subject: `New inquiry from ${parsed.data.name}`,
-          html: notifyHtml,
+          subject: `${subjectTag}New inquiry from ${parsed.data.name}`,
+          body: notifyText,
+          contentType: "text/plain",
           replyTo,
         });
         await sendGmail(rawNotify, LOVABLE_API_KEY, GOOGLE_MAIL_API_KEY);
@@ -194,7 +204,7 @@ Deno.serve(async (req) => {
             to: parsed.data.email,
             from: fromAddress,
             subject: "We received your message — Adept Healing",
-            html: confirmationHtml,
+            body: confirmationHtml,
           });
           await sendGmail(rawConfirm, LOVABLE_API_KEY, GOOGLE_MAIL_API_KEY);
         } catch (err) {
