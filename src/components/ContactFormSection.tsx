@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,13 +30,15 @@ const ContactFormSection = () => {
     if (submitting) return;
     setSubmitting(true);
     try {
-      const { error } = await supabase.functions.invoke("submit-inquiry", {
+      const { data: res, error } = await supabase.functions.invoke("submit-inquiry", {
         body: { name: data.name, email: data.email, phone: data.phone || "", message: data.message, website: data.website || "" },
       });
       if (error) throw error;
+      if (res?.error) throw new Error(res.error);
       setSubmitted(true);
     } catch (err) {
       console.error("Error submitting contact form:", err);
+      toast.error("Couldn't send your message. Please try again or call us directly.");
     } finally {
       setSubmitting(false);
     }

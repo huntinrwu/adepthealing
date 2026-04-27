@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -42,8 +43,9 @@ const IntakeForm = () => {
       if (data?.error) throw new Error(data.error);
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch {
-      // Generic error
+    } catch (err) {
+      console.error("Submit error:", err);
+      toast.error("Couldn't submit your request. Please try again or call us directly.");
     } finally {
       setSubmitting(false);
     }
