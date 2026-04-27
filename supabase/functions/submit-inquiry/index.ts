@@ -14,7 +14,7 @@ const GMAIL_GATEWAY = "https://connector-gateway.lovable.dev/google_mail/gmail/v
 
 const inquirySchema = z.object({
   name: z.string().trim().min(1).max(100),
-  email: z.string().trim().max(255).optional().default(""),
+  email: z.union([z.string().trim().email().max(255), z.literal("")]).optional().default(""),
   phone: z.string().trim().max(20).optional().default(""),
   message: z.string().trim().min(1).max(2000),
   website: z.string().max(0, "Bot detected").optional(),
@@ -22,6 +22,9 @@ const inquirySchema = z.object({
   (data) => data.email.length > 0 || data.phone.length > 0,
   { message: "Email or phone is required" }
 );
+
+// Strip CR/LF to prevent MIME header injection
+const sanitizeHeader = (s: string) => s.replace(/[\r\n]+/g, " ").trim();
 
 const escapeHtml = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -152,8 +155,9 @@ Deno.serve(async (req) => {
 
       // 1. Notification email to Max — plain text, easy to read & reply from Gmail
       try {
-        const replyTo = parsed.data.email && parsed.data.email.length > 0 ? parsed.data.email : undefined;
+        const replyTo = parsed.data.email && parsed.data.email.length > 0 ? sanitizeHeader(parsed.data.email) : undefined;
         const subjectTag = displayId ? `[INQ-${displayId}] ` : "";
+        const safeName = sanitizeHeader(parsed.data.name);
         const notifyText = [
           `New inquiry from ${parsed.data.name}`,
           ``,
@@ -173,7 +177,7 @@ Deno.serve(async (req) => {
         const rawNotify = buildRawEmail({
           to: NOTIFY_EMAIL,
           from: fromAddress,
-          subject: `${subjectTag}New inquiry from ${parsed.data.name}`,
+          subject: `${subjectTag}New inquiry from ${safeName}`,
           body: notifyText,
           contentType: "text/plain",
           replyTo,
@@ -201,7 +205,7 @@ Deno.serve(async (req) => {
             </div>
           `;
           const rawConfirm = buildRawEmail({
-            to: parsed.data.email,
+            to: sanitizeHeader(parsed.data.email),
             from: fromAddress,
             subject: "We received your message — Adept Healing",
             body: confirmationHtml,
