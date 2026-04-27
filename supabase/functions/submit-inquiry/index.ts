@@ -9,7 +9,8 @@ const corsHeaders = {
 
 const MAX_SUBMISSIONS_PER_HOUR = 3;
 const NOTIFY_EMAIL = "Twuhealing@gmail.com";
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
+const FROM_NAME = "Adept Healing";
+const GMAIL_GATEWAY = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
 
 const inquirySchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -25,6 +26,51 @@ const inquirySchema = z.object({
 const escapeHtml = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
    .replace(/"/g, "&quot;").replace(/'/g, "&#039;").replace(/\n/g, "<br/>");
+
+// Encode a string to base64url (Gmail API expects base64url for raw messages)
+function toBase64Url(str: string): string {
+  const bytes = new TextEncoder().encode(str);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function buildRawEmail(opts: {
+  to: string;
+  from: string;
+  subject: string;
+  html: string;
+  replyTo?: string;
+}): string {
+  const headers = [
+    `From: ${opts.from}`,
+    `To: ${opts.to}`,
+    `Subject: ${opts.subject}`,
+    "MIME-Version: 1.0",
+    'Content-Type: text/html; charset="UTF-8"',
+    "Content-Transfer-Encoding: 7bit",
+  ];
+  if (opts.replyTo) headers.push(`Reply-To: ${opts.replyTo}`);
+  const message = headers.join("\r\n") + "\r\n\r\n" + opts.html;
+  return toBase64Url(message);
+}
+
+async function sendGmail(raw: string, lovableKey: string, gmailKey: string) {
+  const res = await fetch(`${GMAIL_GATEWAY}/users/me/messages/send`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${lovableKey}`,
+      "X-Connection-Api-Key": gmailKey,
+    },
+    body: JSON.stringify({ raw }),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Gmail send failed [${res.status}]: ${errText}`);
+  }
+  return res.json();
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -94,13 +140,17 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Send notification email to Max via Resend (best-effort, don't fail the request)
-    try {
-      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-      if (LOVABLE_API_KEY && RESEND_API_KEY) {
-        const displayId = inserted?.display_id;
-        const html = `
+    // Send emails via Gmail (best-effort, don't fail the request)
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GOOGLE_MAIL_API_KEY = Deno.env.get("GOOGLE_MAIL_API_KEY");
+
+    if (LOVABLE_API_KEY && GOOGLE_MAIL_API_KEY) {
+      const fromAddress = `${FROM_NAME} <${NOTIFY_EMAIL}>`;
+      const displayId = inserted?.display_id;
+
+      // 1. Notification email to Max (sent from his own Gmail to himself)
+      try {
+        const notifyHtml = `
           <h2>New Inquiry${displayId ? ` (INQ-${displayId})` : ""}</h2>
           <p><strong>Name:</strong> ${escapeHtml(parsed.data.name)}</p>
           <p><strong>Email:</strong> ${parsed.data.email ? escapeHtml(parsed.data.email) : "<em>not provided</em>"}</p>
@@ -108,70 +158,51 @@ Deno.serve(async (req) => {
           <p><strong>Reason for visit:</strong></p>
           <p>${escapeHtml(parsed.data.message)}</p>
           <hr/>
-          <p style="color:#888;font-size:12px;">Reply directly to this email to respond.</p>
+          <p style="color:#888;font-size:12px;">Reply directly to this email to respond to ${escapeHtml(parsed.data.name)}.</p>
         `;
         const replyTo = parsed.data.email && parsed.data.email.length > 0 ? parsed.data.email : undefined;
-        const emailRes = await fetch(`${GATEWAY_URL}/emails`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-            "X-Connection-Api-Key": RESEND_API_KEY,
-          },
-          body: JSON.stringify({
-            from: "Adept Healing <onboarding@resend.dev>",
-            to: [NOTIFY_EMAIL],
-            subject: `New inquiry from ${parsed.data.name}`,
-            html,
-            ...(replyTo ? { reply_to: replyTo } : {}),
-          }),
+        const rawNotify = buildRawEmail({
+          to: NOTIFY_EMAIL,
+          from: fromAddress,
+          subject: `New inquiry from ${parsed.data.name}`,
+          html: notifyHtml,
+          replyTo,
         });
-        if (!emailRes.ok) {
-          const errText = await emailRes.text();
-          console.error("Resend email failed:", emailRes.status, errText);
-        }
-      } else {
-        console.error("Email keys missing — notification not sent");
+        await sendGmail(rawNotify, LOVABLE_API_KEY, GOOGLE_MAIL_API_KEY);
+      } catch (err) {
+        console.error("Notification email error:", err instanceof Error ? err.message : err);
       }
 
-      // Send confirmation email to the inquirer (best-effort)
-      if (LOVABLE_API_KEY && RESEND_API_KEY && parsed.data.email && parsed.data.email.length > 0) {
-        const confirmationHtml = `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
-            <h2 style="color: #2d5016;">Thank you for reaching out, ${escapeHtml(parsed.data.name)}!</h2>
-            <p>I've received your message and will get back to you as soon as possible — typically within 1–2 business days.</p>
-            <p><strong>Here's a copy of what you sent:</strong></p>
-            <div style="background:#f6f6f1;border-left:3px solid #2d5016;padding:12px 16px;margin:16px 0;border-radius:4px;">
-              ${escapeHtml(parsed.data.message)}
+      // 2. Confirmation email to inquirer (only if they provided an email)
+      if (parsed.data.email && parsed.data.email.length > 0) {
+        try {
+          const confirmationHtml = `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
+              <h2 style="color: #2d5016;">Thank you for reaching out, ${escapeHtml(parsed.data.name)}!</h2>
+              <p>I've received your message and will get back to you as soon as possible — typically within 1–2 business days.</p>
+              <p><strong>Here's a copy of what you sent:</strong></p>
+              <div style="background:#f6f6f1;border-left:3px solid #2d5016;padding:12px 16px;margin:16px 0;border-radius:4px;">
+                ${escapeHtml(parsed.data.message)}
+              </div>
+              <p>If your matter is urgent, feel free to reply directly to this email.</p>
+              <p style="margin-top:24px;">Warmly,<br/>Max<br/><em>Adept Healing</em></p>
+              <hr style="border:none;border-top:1px solid #e5e5e5;margin:24px 0;"/>
+              <p style="color:#888;font-size:12px;">This is an automated confirmation. Please don't share sensitive medical details by email.</p>
             </div>
-            <p>If your matter is urgent, feel free to reply directly to this email.</p>
-            <p style="margin-top:24px;">Warmly,<br/>Max<br/><em>Adept Healing</em></p>
-            <hr style="border:none;border-top:1px solid #e5e5e5;margin:24px 0;"/>
-            <p style="color:#888;font-size:12px;">This is an automated confirmation. Please don't share sensitive medical details by email.</p>
-          </div>
-        `;
-        const confirmRes = await fetch(`${GATEWAY_URL}/emails`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-            "X-Connection-Api-Key": RESEND_API_KEY,
-          },
-          body: JSON.stringify({
-            from: "Adept Healing <onboarding@resend.dev>",
-            to: [parsed.data.email],
+          `;
+          const rawConfirm = buildRawEmail({
+            to: parsed.data.email,
+            from: fromAddress,
             subject: "We received your message — Adept Healing",
             html: confirmationHtml,
-            reply_to: NOTIFY_EMAIL,
-          }),
-        });
-        if (!confirmRes.ok) {
-          const errText = await confirmRes.text();
-          console.error("Confirmation email failed:", confirmRes.status, errText);
+          });
+          await sendGmail(rawConfirm, LOVABLE_API_KEY, GOOGLE_MAIL_API_KEY);
+        } catch (err) {
+          console.error("Confirmation email error:", err instanceof Error ? err.message : err);
         }
       }
-    } catch (emailErr) {
-      console.error("Email send error:", emailErr instanceof Error ? emailErr.message : emailErr);
+    } else {
+      console.error("Gmail keys missing — emails not sent");
     }
 
     return new Response(
