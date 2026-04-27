@@ -204,7 +204,7 @@ Deno.serve(async (req) => {
             to: parsed.data.email,
             from: fromAddress,
             subject: "We received your message — Adept Healing",
-            html: confirmationHtml,
+            body: confirmationHtml,
           });
           await sendGmail(rawConfirm, LOVABLE_API_KEY, GOOGLE_MAIL_API_KEY);
         } catch (err) {
