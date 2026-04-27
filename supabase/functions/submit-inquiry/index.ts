@@ -14,7 +14,7 @@ const GMAIL_GATEWAY = "https://connector-gateway.lovable.dev/google_mail/gmail/v
 
 const inquirySchema = z.object({
   name: z.string().trim().min(1).max(100),
-  email: z.string().trim().max(255).optional().default(""),
+  email: z.union([z.string().trim().email().max(255), z.literal("")]).optional().default(""),
   phone: z.string().trim().max(20).optional().default(""),
   message: z.string().trim().min(1).max(2000),
   website: z.string().max(0, "Bot detected").optional(),
@@ -22,6 +22,9 @@ const inquirySchema = z.object({
   (data) => data.email.length > 0 || data.phone.length > 0,
   { message: "Email or phone is required" }
 );
+
+// Strip CR/LF to prevent MIME header injection
+const sanitizeHeader = (s: string) => s.replace(/[\r\n]+/g, " ").trim();
 
 const escapeHtml = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
