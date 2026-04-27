@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
             </div>
           `;
           const rawConfirm = buildRawEmail({
-            to: parsed.data.email,
+            to: sanitizeHeader(parsed.data.email),
             from: fromAddress,
             subject: "We received your message — Adept Healing",
             body: confirmationHtml,
