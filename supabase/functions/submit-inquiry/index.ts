@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
         const rawNotify = buildRawEmail({
           to: NOTIFY_EMAIL,
           from: fromAddress,
-          subject: `${subjectTag}New inquiry from ${parsed.data.name}`,
+          subject: `${subjectTag}New inquiry from ${safeName}`,
           body: notifyText,
           contentType: "text/plain",
           replyTo,
