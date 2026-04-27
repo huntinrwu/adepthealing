@@ -155,8 +155,9 @@ Deno.serve(async (req) => {
 
       // 1. Notification email to Max — plain text, easy to read & reply from Gmail
       try {
-        const replyTo = parsed.data.email && parsed.data.email.length > 0 ? parsed.data.email : undefined;
+        const replyTo = parsed.data.email && parsed.data.email.length > 0 ? sanitizeHeader(parsed.data.email) : undefined;
         const subjectTag = displayId ? `[INQ-${displayId}] ` : "";
+        const safeName = sanitizeHeader(parsed.data.name);
         const notifyText = [
           `New inquiry from ${parsed.data.name}`,
           ``,
